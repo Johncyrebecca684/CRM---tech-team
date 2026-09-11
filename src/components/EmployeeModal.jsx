@@ -41,7 +41,7 @@ export const EmployeeModal = () => {
 
   if (!isEmployeeModalOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
@@ -56,7 +56,7 @@ export const EmployeeModal = () => {
         weeklyCapacityHours: parseInt(formData.weeklyCapacityHours) || 40
       });
     } else {
-      addEmployee({
+      await addEmployee({
         name: formData.name,
         role: formData.role,
         email: formData.email,
@@ -126,29 +126,15 @@ export const EmployeeModal = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label className="form-label">Skills (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="React, Docker, AWS"
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="form-label">Weekly Capacity (Hrs)</label>
-              <input
-                type="number"
-                min="10"
-                max="80"
-                className="form-input"
-                value={formData.weeklyCapacityHours}
-                onChange={(e) => setFormData({ ...formData, weeklyCapacityHours: e.target.value })}
-              />
-            </div>
+          <div>
+            <label className="form-label">Skills (Comma-separated)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="React, Docker, AWS"
+              value={formData.skills}
+              onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+            />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>

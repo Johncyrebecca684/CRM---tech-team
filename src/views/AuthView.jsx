@@ -1,350 +1,1176 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCrm } from '../context/CrmContext';
-import { Crown, ShieldCheck, UserCheck, Sparkles, LogIn, UserPlus, Key } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  UserCheck, 
+  Lock, 
+  Mail, 
+  Eye, 
+  EyeOff, 
+  CheckCircle2, 
+  AlertCircle,
+  ArrowRight,
+  User,
+  Briefcase,
+  Layers,
+  Clock
+} from 'lucide-react';
 
 export const AuthView = () => {
   const { 
-    loginAsSuperAdmin, 
-    loginAsAdmin, 
-    loginAsEmployee, 
     setCurrentUser,
     setSelectedEmployeeViewId,
     setCurrentTab,
     admins, 
-    employees, 
-    addEmployee,
-    addAdminAccount 
+    employees,
+    setEmployees, 
+    addEmployee 
   } = useCrm();
 
-  const [authMode, setAuthMode] = useState('employee'); // Default to Employee tab for registration ease
+  const [authRole, setAuthRole] = useState('admin'); // 'admin' | 'employee'
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register' (register only for employee)
 
-  // Super Admin state
-  const [superName, setSuperName] = useState('Chief Technology Officer');
-  const [superEmail, setSuperEmail] = useState('cto@techteam.dev');
+  // Saved credentials in localStorage
+  const savedEmailKey = 'tech_crm_saved_email';
+  const savedPassKey = 'tech_crm_saved_pass';
+  const savedRememberKey = 'tech_crm_remember_me';
 
-  // Admin state
-  const [selectedAdminId, setSelectedAdminId] = useState(admins[0]?.id || '');
-  const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminEmail, setNewAdminEmail] = useState('');
+  // Form State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
-  // Employee state
-  const [selectedEmpId, setSelectedEmpId] = useState(employees[0]?.id || '');
-  const [newEmpName, setNewEmpName] = useState('');
-  const [newEmpRole, setNewEmpRole] = useState('Software Engineer');
-  const [newEmpEmail, setNewEmpEmail] = useState('');
+  // Registration Fields (Employee only)
+  const [regName, setRegName] = useState('');
+  const [regRoleTitle, setRegRoleTitle] = useState('Software Engineer');
 
-  const handleSuperSubmit = (e) => {
-    e.preventDefault();
-    loginAsSuperAdmin(superName, superEmail);
+  // UI state
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Step 2: Employee Profile Setup Onboarding State
+  const [isCompletingProfile, setIsCompletingProfile] = useState(false);
+  const [pendingEmployeeUser, setPendingEmployeeUser] = useState(null);
+  const [profileName, setProfileName] = useState('');
+  const [profileRole, setProfileRole] = useState('');
+  const [profileSkills, setProfileSkills] = useState([]);
+  const [customSkillInput, setCustomSkillInput] = useState('');
+  const [profileCapacity, setProfileCapacity] = useState('40');
+
+  // Preset role and skill options
+  const PRESET_ROLES = [
+    'Media Specialist',
+    'Graphic Designer',
+    'Content Specialist',
+    'UI/UX Designer',
+    'Digital Marketer',
+    'Software Engineer',
+    'Associate Software Engineer',
+    'Video Editor',
+    'Frontend Developer'
+  ];
+
+  const PRESET_SKILLS = [
+    'Social Media',
+    'Creatives',
+    'Banner Design',
+    'Figma',
+    'React',
+    'Canva',
+    'Copywriting',
+    'SEO',
+    'Video Editing',
+    'JavaScript',
+    'UI/UX',
+    'Content Strategy'
+  ];
+
+  // Load saved credentials on mount if remember me was enabled
+  useEffect(() => {
+    const isRemembered = localStorage.getItem(savedRememberKey) === 'true';
+    if (isRemembered) {
+      const savedEmail = localStorage.getItem(savedEmailKey) || '';
+      const savedPass = localStorage.getItem(savedPassKey) || '';
+      if (savedEmail) setEmail(savedEmail);
+      if (savedPass) setPassword(savedPass);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // When switching to admin role, ensure authMode is strictly login
+  const handleRoleChange = (role) => {
+    setAuthRole(role);
+    if (role === 'admin') {
+      setAuthMode('login');
+    }
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsCompletingProfile(false);
   };
 
-  const handleAdminSubmit = (e) => {
-    e.preventDefault();
-    if (selectedAdminId) {
-      loginAsAdmin(selectedAdminId);
-    } else if (admins.length > 0) {
-      loginAsAdmin(admins[0].id);
+  const handleToggleSkill = (skill) => {
+    if (profileSkills.includes(skill)) {
+      setProfileSkills(profileSkills.filter((s) => s !== skill));
+    } else {
+      setProfileSkills([...profileSkills, skill]);
     }
   };
 
-  const handleCreateAdminSubmit = (e) => {
-    e.preventDefault();
-    if (!newAdminName.trim() || !newAdminEmail.trim()) return;
-    const createdAdmin = addAdminAccount({ name: newAdminName, email: newAdminEmail });
-    
-    // Direct User Session Set
-    setCurrentUser({
-      id: createdAdmin.id,
-      name: createdAdmin.name,
-      email: createdAdmin.email,
-      role: 'admin',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-    });
-    setCurrentTab('admin-dashboard');
-  };
-
-  const handleEmployeeSubmit = (e) => {
-    e.preventDefault();
-    if (selectedEmpId) {
-      loginAsEmployee(selectedEmpId);
-    } else if (employees.length > 0) {
-      loginAsEmployee(employees[0].id);
+  const handleAddCustomSkill = (e) => {
+    e?.preventDefault();
+    const trimmed = customSkillInput.trim();
+    if (trimmed && !profileSkills.includes(trimmed)) {
+      setProfileSkills([...profileSkills, trimmed]);
+      setCustomSkillInput('');
     }
   };
 
-  const handleRegisterEmployeeSubmit = (e) => {
+  const handleRemoveSkill = (skillToRemove) => {
+    setProfileSkills(profileSkills.filter((s) => s !== skillToRemove));
+  };
+
+  // Submit Login Handler
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (!newEmpName.trim()) return;
+    setErrorMsg('');
+    setSuccessMsg('');
 
-    const createdEmp = addEmployee({
-      name: newEmpName,
-      role: newEmpRole || 'Software Engineer',
-      email: newEmpEmail || `${newEmpName.toLowerCase().replace(/\s+/g, '.')}@techteam.dev`,
-      skills: ['React', 'JavaScript'],
-      weeklyCapacityHours: 40
-    });
+    if (!email.trim()) {
+      setErrorMsg('Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      setErrorMsg('Please enter your password.');
+      return;
+    }
 
-    // Direct User Session Set to bypass React async closure delay
-    const userSession = {
-      id: createdEmp.id,
-      name: createdEmp.name,
-      email: createdEmp.email,
-      role: 'employee',
-      avatar: createdEmp.avatar
-    };
+    const cleanEmail = email.trim().toLowerCase();
 
-    setCurrentUser(userSession);
-    setSelectedEmployeeViewId(createdEmp.id);
-    setCurrentTab('employee-page');
+    // 1. Client-Side Pre-Validation: Reject wrong portal attempt immediately
+    if (authRole === 'admin') {
+      const empMatch = employees.find(e => e.email && e.email.toLowerCase() === cleanEmail);
+      if (empMatch) {
+        setErrorMsg(`Access Denied: ${empMatch.name} is an Employee / Specialist. Please click the "Employee Portal" tab above to sign in.`);
+        return;
+      }
+    } else {
+      const adminMatch = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
+      if (adminMatch) {
+        setErrorMsg(`Access Notice: ${adminMatch.name} is an Administrator. Please click the "Admin Portal" tab above to sign in.`);
+        return;
+      }
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Call authentication endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password, role: authRole })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Authentication failed. Please check your credentials.');
+      }
+
+      // 2. Post-Authentication Role Enforcement
+      if (authRole === 'admin' && data.user.role !== 'admin' && data.user.role !== 'super_admin') {
+        throw new Error(`Access Denied: ${data.user.name} does not have administrator privileges. Please click the "Employee Portal" tab to sign in.`);
+      }
+
+      if (authRole === 'employee' && (data.user.role === 'admin' || data.user.role === 'super_admin')) {
+        throw new Error(`Access Notice: ${data.user.name} is an Administrator. Please click the "Admin Portal" tab to sign in.`);
+      }
+
+      // Save credentials if Remember Me is checked
+      if (rememberMe) {
+        localStorage.setItem(savedEmailKey, cleanEmail);
+        localStorage.setItem(savedPassKey, password);
+        localStorage.setItem(savedRememberKey, 'true');
+      } else {
+        localStorage.removeItem(savedEmailKey);
+        localStorage.removeItem(savedPassKey);
+        localStorage.setItem(savedRememberKey, 'false');
+      }
+
+      // If logging in as employee and profile needs completion (role/name/skills missing or required)
+      if (authRole === 'employee') {
+        const needsSetup = data.requiresProfileSetup || 
+          !data.user.isProfileCompleted || 
+          !data.user.roleTitle || 
+          (data.user.roleTitle === 'Media Specialist' && (!data.user.skills || data.user.skills.length === 0));
+
+        if (needsSetup) {
+          setPendingEmployeeUser(data.user);
+          const rawName = data.user.name && !data.user.name.includes('@') 
+            ? data.user.name 
+            : cleanEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+          setProfileName(rawName);
+          setProfileRole(data.user.roleTitle || 'Media Specialist');
+          setProfileSkills(Array.isArray(data.user.skills) && data.user.skills.length > 0 ? data.user.skills : ['Social Media', 'Creatives']);
+          setProfileCapacity(data.user.weeklyCapacityHours ? data.user.weeklyCapacityHours.toString() : '40');
+          setIsCompletingProfile(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Already completed profile - update directory state
+        if (setEmployees) {
+          setEmployees(prev => {
+            const matchIdx = prev.findIndex(e => 
+              e.id === data.user.id || 
+              (e.email && e.email.toLowerCase() === cleanEmail)
+            );
+            if (matchIdx >= 0) {
+              const updated = [...prev];
+              updated[matchIdx] = { ...updated[matchIdx], ...data.user, email: cleanEmail };
+              return updated;
+            } else {
+              return [...prev, data.user];
+            }
+          });
+        }
+      }
+
+      setSuccessMsg(`Welcome back, ${data.user.name}! Redirecting...`);
+
+      setTimeout(() => {
+        setCurrentUser(data.user);
+        if (authRole === 'admin') {
+          setCurrentTab('admin-dashboard');
+        } else {
+          setSelectedEmployeeViewId(data.user.id);
+          setCurrentTab('employee-page');
+        }
+      }, 500);
+
+    } catch (err) {
+      console.warn('[Auth System Notice]', err.message);
+
+      const cleanEmail = email.trim().toLowerCase();
+
+      // Check if user is attempting login through the wrong portal
+      if (authRole === 'admin') {
+        const empAcc = employees.find(e => e.email && e.email.toLowerCase() === cleanEmail);
+        if (empAcc) {
+          setErrorMsg(`Access Denied: ${empAcc.name} is an Employee / Specialist. Please click the "Employee Portal" tab above to sign in.`);
+          setIsLoading(false);
+          return;
+        }
+
+        const matchedAdmin = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
+        if (matchedAdmin) {
+          const userSession = {
+            id: matchedAdmin.id,
+            name: matchedAdmin.name,
+            email: matchedAdmin.email,
+            role: 'admin',
+            avatar: matchedAdmin.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+          };
+          if (rememberMe) {
+            localStorage.setItem(savedEmailKey, email.trim());
+            localStorage.setItem(savedPassKey, password);
+            localStorage.setItem(savedRememberKey, 'true');
+          }
+          setSuccessMsg(`Welcome back, ${userSession.name}!`);
+          setTimeout(() => {
+            setCurrentUser(userSession);
+            setCurrentTab('admin-dashboard');
+          }, 500);
+          return;
+        }
+      } else {
+        const adminAcc = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
+        if (adminAcc) {
+          setErrorMsg(`Access Notice: ${adminAcc.name} is an Administrator. Please click the "Admin Portal" tab above to sign in.`);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fallback for employee login
+        const rawName = cleanEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const tempUser = {
+          id: `emp-${Date.now()}`,
+          name: rawName,
+          email: cleanEmail,
+          role: 'employee',
+          roleTitle: 'Media Specialist',
+          skills: ['Social Media', 'Creatives'],
+          weeklyCapacityHours: 40,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(rawName)}`,
+          isProfileCompleted: false
+        };
+
+        setPendingEmployeeUser(tempUser);
+        setProfileName(rawName);
+        setProfileRole('Media Specialist');
+        setProfileSkills(['Social Media', 'Creatives']);
+        setProfileCapacity('40');
+        setIsCompletingProfile(true);
+        setIsLoading(false);
+        return;
+      }
+
+      setErrorMsg(err.message || 'Invalid email or password. Please verify your credentials or contact your administrator.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Submit Step 2 Profile Setup Handler
+  const handleProfileStepSubmit = async (e) => {
+    e.preventDefault();
+    if (!profileName.trim()) {
+      setErrorMsg('Please enter your full name.');
+      return;
+    }
+    if (!profileRole.trim()) {
+      setErrorMsg('Please select or specify your role / designation.');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      const targetEmpId = pendingEmployeeUser?.id || `emp-${Date.now()}`;
+      const targetEmail = pendingEmployeeUser?.email || email.trim().toLowerCase();
+      const finalRole = profileRole.trim();
+      const finalSkills = profileSkills.length > 0 ? profileSkills : ['Social Media', 'Creatives'];
+      const finalCapacity = parseInt(profileCapacity) || 40;
+      const finalAvatar = pendingEmployeeUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profileName.trim())}`;
+
+      const updatedData = {
+        id: targetEmpId,
+        name: profileName.trim(),
+        email: targetEmail,
+        role: finalRole,
+        roleTitle: finalRole,
+        skills: finalSkills,
+        weeklyCapacityHours: finalCapacity,
+        avatar: finalAvatar,
+        status: 'Active',
+        isProfileCompleted: true,
+        joinedDate: new Date().toISOString().split('T')[0]
+      };
+
+      // 1. Update backend via PUT /api/employees/:id
+      try {
+        await fetch(`/api/employees/${targetEmpId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData)
+        });
+      } catch (apiErr) {
+        console.warn('API Sync Notice:', apiErr.message);
+      }
+
+      // 2. Update context state
+      if (setEmployees) {
+        setEmployees((prev) => {
+          const matchIdx = prev.findIndex(
+            (e) => (e.id && e.id === targetEmpId) || (e.email && e.email.toLowerCase() === targetEmail.toLowerCase())
+          );
+          if (matchIdx >= 0) {
+            const updated = [...prev];
+            updated[matchIdx] = { ...updated[matchIdx], ...updatedData };
+            return updated;
+          } else {
+            return [...prev, updatedData];
+          }
+        });
+      }
+
+      const completedUserSession = {
+        id: targetEmpId,
+        name: profileName.trim(),
+        email: targetEmail,
+        role: 'employee',
+        roleTitle: finalRole,
+        skills: finalSkills,
+        weeklyCapacityHours: finalCapacity,
+        avatar: finalAvatar,
+        isProfileCompleted: true
+      };
+
+      setSuccessMsg(`Welcome aboard, ${profileName.trim()}! Workspace activated.`);
+
+      setTimeout(() => {
+        setCurrentUser(completedUserSession);
+        setSelectedEmployeeViewId(targetEmpId);
+        setCurrentTab('employee-page');
+      }, 500);
+
+    } catch (err) {
+      console.error('[Profile Setup Error]', err);
+      setErrorMsg('Failed to save profile. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Submit Register Handler (Employee Registration only)
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!regName.trim() || !email.trim() || !password) {
+      setErrorMsg('Please complete all required fields.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const createdEmp = await addEmployee({
+        name: regName.trim(),
+        role: regRoleTitle || 'Software Engineer',
+        email: email.trim(),
+        skills: ['Engineering'],
+        weeklyCapacityHours: 40
+      });
+
+      const userSession = {
+        id: createdEmp.id,
+        name: createdEmp.name,
+        email: createdEmp.email,
+        role: 'employee',
+        avatar: createdEmp.avatar,
+        isProfileCompleted: false
+      };
+
+      if (rememberMe) {
+        localStorage.setItem(savedEmailKey, email.trim());
+        localStorage.setItem(savedPassKey, password);
+        localStorage.setItem(savedRememberKey, 'true');
+      }
+
+      // Transition to Step 2 for skills & role confirmation
+      setPendingEmployeeUser(userSession);
+      setProfileName(createdEmp.name);
+      setProfileRole(regRoleTitle || 'Software Engineer');
+      setProfileSkills(['Engineering', 'Creatives']);
+      setProfileCapacity('40');
+      setIsCompletingProfile(true);
+      setIsLoading(false);
+
+    } catch (err) {
+      setErrorMsg(err.message || 'Registration failed. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.18) 0%, rgba(7, 10, 18, 1) 70%)',
-      padding: '20px'
-    }}>
-      <div className="glass-panel-glow animate-fade-in" style={{ width: '100%', maxWidth: '520px', padding: '36px' }}>
+    <div className="auth-page">
+      <div className="auth-card animate-fade-in">
         
-        {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
-            background: 'var(--gradient-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 12px auto',
-            boxShadow: 'var(--shadow-glow)'
-          }}>
-            <Sparkles size={26} color="#ffffff" />
-          </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Tech Team CRM</h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            3-Tier Role-Based Access Control (RBAC) System
-          </p>
-        </div>
+        {/* Left Column: Form / Step 2 Setup */}
+        <div className="auth-form-side">
+          <div>
+            {/* Minimal Brand Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)'
+                }}>
+                  <Layers size={20} />
+                </div>
+                <div>
+                  <span style={{ 
+                    fontSize: '0.92rem', 
+                    fontWeight: 700, 
+                    color: '#0f172a',
+                    letterSpacing: '-0.01em' 
+                  }}>
+                    Tech Team CRM
+                  </span>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}>
+                    Enterprise Workspace
+                  </div>
+                </div>
+              </div>
 
-        {/* 2 Role Portal Selector Tabs */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '6px',
-          background: 'var(--bg-input)',
-          padding: '4px',
-          borderRadius: '12px',
-          marginBottom: '24px',
-          border: '1px solid var(--border-color)'
-        }}>
-          <button
-            onClick={() => setAuthMode('admin')}
-            style={{
-              padding: '10px 8px',
-              borderRadius: '8px',
-              border: 'none',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              background: authMode === 'admin' || authMode === 'register-admin' ? 'var(--gradient-primary)' : 'transparent',
-              color: authMode === 'admin' || authMode === 'register-admin' ? '#fff' : 'var(--text-muted)'
-            }}
-          >
-            <ShieldCheck size={14} style={{ display: 'inline', marginRight: '6px' }} /> Admin Portal
-          </button>
-
-          <button
-            onClick={() => setAuthMode('employee')}
-            style={{
-              padding: '10px 8px',
-              borderRadius: '8px',
-              border: 'none',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              background: authMode === 'employee' || authMode === 'register-emp' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
-              color: authMode === 'employee' || authMode === 'register-emp' ? '#fff' : 'var(--text-muted)'
-            }}
-          >
-            <UserCheck size={14} style={{ display: 'inline', marginRight: '6px' }} /> Employee Portal
-          </button>
-        </div>
-
-        {/* ADMIN PORTAL */}
-        {authMode === 'admin' && (
-          <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.3)', fontSize: '0.8rem', color: 'var(--accent-primary)' }}>
-              🛡️ Admin Manager Access: Work task assignment, employee capacities, dates & team stats control.
+              <span style={{
+                fontSize: '0.72rem',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                background: '#f1f5f9',
+                color: '#64748b',
+                fontWeight: 600,
+                letterSpacing: '0.02em'
+              }}>
+                v5.2
+              </span>
             </div>
 
-            {admins.length > 0 ? (
-              <>
-                <div>
-                  <label className="form-label">Select Admin Manager</label>
-                  <select
-                    className="form-select"
-                    style={{ padding: '12px' }}
-                    value={selectedAdminId || admins[0]?.id}
-                    onChange={(e) => setSelectedAdminId(e.target.value)}
-                  >
-                    {admins.map((adm) => (
-                      <option key={adm.id} value={adm.id}>
-                        🛡️ {adm.name} ({adm.email})
-                      </option>
-                    ))}
-                  </select>
+            {/* STEP 2: Profile & Skills Onboarding Form */}
+            {isCompletingProfile ? (
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '16px',
+                  background: '#e0e7ff',
+                  color: '#4338ca',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  marginBottom: '12px'
+                }}>
+                  <UserCheck size={14} />
+                  <span>Step 2 of 2: Specialist Profile & Skills</span>
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ padding: '12px', fontSize: '0.95rem', marginTop: '6px' }}>
-                  <LogIn size={18} /> Login as Admin Manager
-                </button>
-              </>
+                <h1 style={{ 
+                  fontSize: '1.4rem', 
+                  fontWeight: 700, 
+                  color: '#0f172a', 
+                  letterSpacing: '-0.02em',
+                  marginBottom: '6px'
+                }}>
+                  Complete Your Profile
+                </h1>
+                <p style={{ fontSize: '0.84rem', color: '#64748b', marginBottom: '20px' }}>
+                  Please confirm your name, role, and skills so tasks and projects are routed to you accurately.
+                </p>
+
+                {/* Alert Messages */}
+                {errorMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#fef2f2',
+                    border: '1px solid #fee2e2',
+                    color: '#dc2626',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#f0fdf4',
+                    border: '1px solid #dcfce7',
+                    color: '#16a34a',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleProfileStepSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Full Name */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Full Name *
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <User size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        className="auth-input"
+                        placeholder="e.g. Johncy Rebecca"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Role / Designation */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Role / Designation *
+                    </label>
+                    <div className="auth-input-group" style={{ marginBottom: '8px' }}>
+                      <span className="auth-input-icon">
+                        <Briefcase size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        className="auth-input"
+                        placeholder="e.g. Media Specialist, Software Engineer"
+                        value={profileRole}
+                        onChange={(e) => setProfileRole(e.target.value)}
+                      />
+                    </div>
+                    {/* Role Quick Picks */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {PRESET_ROLES.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => setProfileRole(role)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '14px',
+                            border: profileRole === role ? '1px solid #4f46e5' : '1px solid #e2e8f0',
+                            background: profileRole === role ? '#eef2ff' : '#ffffff',
+                            color: profileRole === role ? '#4338ca' : '#64748b',
+                            fontSize: '0.72rem',
+                            fontWeight: profileRole === role ? 600 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Skills / Expertise */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Skills & Specialties
+                    </label>
+                    
+                    {/* Active Selected Skills Badges */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px', minHeight: '28px' }}>
+                      {profileSkills.map((skill) => (
+                        <span
+                          key={skill}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            background: '#0f172a',
+                            color: '#ffffff',
+                            fontSize: '0.74rem',
+                            fontWeight: 500
+                          }}
+                        >
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(skill)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#94a3b8',
+                              cursor: 'pointer',
+                              padding: 0,
+                              fontSize: '0.75rem',
+                              lineHeight: 1,
+                              marginLeft: '2px'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Skill Preset Chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
+                      {PRESET_SKILLS.map((skill) => {
+                        const isSelected = profileSkills.includes(skill);
+                        return (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => handleToggleSkill(skill)}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              border: isSelected ? '1px solid #4f46e5' : '1px solid #e2e8f0',
+                              background: isSelected ? '#eef2ff' : '#f8fafc',
+                              color: isSelected ? '#4338ca' : '#64748b',
+                              fontSize: '0.7rem',
+                              fontWeight: isSelected ? 600 : 400,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isSelected ? '✓ ' : '+ '}{skill}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Skill Input */}
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        className="auth-input"
+                        style={{ height: '36px', fontSize: '0.8rem' }}
+                        placeholder="Add custom skill (e.g. Canva, SEO) and press Enter"
+                        value={customSkillInput}
+                        onChange={(e) => setCustomSkillInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCustomSkill();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomSkill}
+                        style={{
+                          padding: '0 12px',
+                          borderRadius: '8px',
+                          background: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          color: '#334155',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Weekly Capacity */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Weekly Working Hours Capacity
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Clock size={16} />
+                      </span>
+                      <input
+                        type="number"
+                        min={10}
+                        max={80}
+                        className="auth-input"
+                        value={profileCapacity}
+                        onChange={(e) => setProfileCapacity(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCompletingProfile(false);
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        color: '#64748b',
+                        fontSize: '0.84rem',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="auth-submit-btn"
+                      style={{ flex: 1 }}
+                    >
+                      {isLoading ? (
+                        'Saving Profile...'
+                      ) : (
+                        <>
+                          <span>Complete & Enter Workspace</span>
+                          <ArrowRight size={16} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '12px 0' }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>No admin manager profiles found.</p>
-                <button type="button" onClick={() => setAuthMode('register-admin')} className="btn btn-primary" style={{ width: '100%', padding: '10px' }}>
-                  <UserPlus size={16} /> Create Admin Profile
-                </button>
+              /* STEP 1: Portal Login Form */
+              <div>
+                {/* Title & Subtitle */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h1 style={{ 
+                    fontSize: '1.5rem', 
+                    fontWeight: 700, 
+                    color: '#0f172a', 
+                    letterSpacing: '-0.02em',
+                    marginBottom: '6px'
+                  }}>
+                    {authRole === 'admin' ? 'Admin Sign In' : 'Employee Sign In'}
+                  </h1>
+                  <p style={{ fontSize: '0.86rem', color: '#64748b' }}>
+                    {authRole === 'admin'
+                      ? 'Enter your administrative credentials to access management controls.'
+                      : 'Enter your specialist credentials to access your personal dashboard.'}
+                  </p>
+                </div>
+
+                {/* Role Switcher (Admin vs Employee) */}
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Select Portal
+                  </div>
+                  <div className="auth-segmented-control">
+                    <button
+                      type="button"
+                      className={`auth-segmented-btn ${authRole === 'admin' ? 'active' : ''}`}
+                      onClick={() => handleRoleChange('admin')}
+                    >
+                      <ShieldCheck size={16} /> Admin Portal
+                    </button>
+                    <button
+                      type="button"
+                      className={`auth-segmented-btn ${authRole === 'employee' ? 'active' : ''}`}
+                      onClick={() => handleRoleChange('employee')}
+                    >
+                      <UserCheck size={16} /> Employee Portal
+                    </button>
+                  </div>
+                </div>
+
+                {/* Authorized Access Notice */}
+                <div style={{ 
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  background: 'var(--bg-card-hover)',
+                  border: '1px solid var(--border-color)',
+                  marginBottom: '22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-muted)'
+                }}>
+                  {authRole === 'admin' ? (
+                    <>
+                      <ShieldCheck size={15} color="var(--accent-primary)" />
+                      <span>Authorized administrator access only</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck size={15} color="var(--accent-primary)" />
+                      <span>Authorized specialist access only</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Alert Messages */}
+                {errorMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#fef2f2',
+                    border: '1px solid #fee2e2',
+                    color: '#dc2626',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '18px'
+                  }}>
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#f0fdf4',
+                    border: '1px solid #dcfce7',
+                    color: '#16a34a',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '18px'
+                  }}>
+                    <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                {/* Form: Sign In */}
+                <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px' }}>
+                      Email Address
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Mail size={16} />
+                      </span>
+                      <input
+                        type="email"
+                        required
+                        className="auth-input"
+                        placeholder="name@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="username"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px' }}>
+                      Password
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Lock size={16} />
+                      </span>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        className="auth-input"
+                        style={{ paddingRight: '40px' }}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          background: 'none',
+                          border: 'none',
+                          color: '#94a3b8',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '4px'
+                        }}
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '2px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        style={{ accentColor: '#0f172a', width: '15px', height: '15px', cursor: 'pointer' }}
+                      />
+                      Remember me
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="auth-submit-btn"
+                    style={{ marginTop: '6px' }}
+                  >
+                    {isLoading ? (
+                      'Signing in...'
+                    ) : (
+                      <>
+                        <span>Sign in to {authRole === 'admin' ? 'Admin' : 'Employee'} Portal</span>
+                        <ArrowRight size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
             )}
-          </form>
-        )}
-
-        {/* CREATE ADMIN PORTAL */}
-        {authMode === 'register-admin' && (
-          <form onSubmit={handleCreateAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>Create Admin Manager Account</h3>
-
-            <div>
-              <label className="form-label">Manager Name *</label>
-              <input
-                type="text"
-                required
-                className="form-input"
-                placeholder="e.g. Alex Manager"
-                value={newAdminName}
-                onChange={(e) => setNewAdminName(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="form-label">Email Address *</label>
-              <input
-                type="email"
-                required
-                className="form-input"
-                placeholder="alex.m@techteam.dev"
-                value={newAdminEmail}
-                onChange={(e) => setNewAdminEmail(e.target.value)}
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ padding: '12px', marginTop: '6px' }}>
-              <Key size={16} /> Register & Enter Admin Dashboard
-            </button>
-          </form>
-        )}
-
-        {/* EMPLOYEE PORTAL */}
-        {(authMode === 'employee' || authMode === 'register-emp') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '0.8rem', color: 'var(--accent-emerald)' }}>
-              👤 Employee Access: Personal task list, stopwatch time logger, and end-of-month hour audits.
-            </div>
-
-            {employees.length > 0 && authMode === 'employee' ? (
-              <form onSubmit={handleEmployeeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label className="form-label">Select Registered Tech Employee</label>
-                  <select
-                    className="form-select"
-                    style={{ padding: '12px' }}
-                    value={selectedEmpId || employees[0]?.id}
-                    onChange={(e) => setSelectedEmpId(e.target.value)}
-                  >
-                    {employees.map((emp) => (
-                      <option key={emp.id} value={emp.id}>
-                        👤 {emp.name} ({emp.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button type="submit" className="btn" style={{ padding: '12px', fontSize: '0.95rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff' }}>
-                  <LogIn size={18} /> Enter Employee Work Page
-                </button>
-
-                <div style={{ textAlign: 'center', marginTop: '4px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('register-emp')}
-                    style={{ background: 'none', border: 'none', color: 'var(--accent-emerald)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    + Register New Tech Employee Account
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleRegisterEmployeeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-emerald)' }}>Register Tech Specialist Account</h3>
-
-                <div>
-                  <label className="form-label">FULL NAME *</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    placeholder="e.g. Johncy Rebecca"
-                    value={newEmpName}
-                    onChange={(e) => setNewEmpName(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">JOB TITLE / TECH ROLE *</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    placeholder="e.g. Software Engineer"
-                    value={newEmpRole}
-                    onChange={(e) => setNewEmpRole(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">EMAIL ADDRESS *</label>
-                  <input
-                    type="email"
-                    required
-                    className="form-input"
-                    placeholder="johncyrebecca@gmail.com"
-                    value={newEmpEmail}
-                    onChange={(e) => setNewEmpEmail(e.target.value)}
-                  />
-                </div>
-
-                <button type="submit" className="btn" style={{ padding: '12px', background: 'var(--accent-emerald)', color: '#fff', marginTop: '6px', cursor: 'pointer' }}>
-                  <UserPlus size={16} /> Register & Open Employee Page
-                </button>
-
-                {employees.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('employee')}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', marginTop: '4px' }}
-                  >
-                    ← Back to Registered Employee Select
-                  </button>
-                )}
-              </form>
-            )}
           </div>
-        )}
+
+          {/* Footer prompt */}
+          {!isCompletingProfile && (
+            <div style={{ 
+              marginTop: '32px', 
+              textAlign: 'center', 
+              fontSize: '0.82rem', 
+              color: 'var(--text-muted)' 
+            }}>
+              {authRole === 'admin' ? (
+                <span>
+                  Admin accounts are provisioned by system leads. Contact IT for administrative access.
+                </span>
+              ) : (
+                <span>
+                  Employee accounts are provisioned by admin leads. Contact management for credentials.
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Sleek Brand Showcase */}
+        <div className="auth-brand-side">
+          <div>
+            {/* Live Operational Status */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: '#f8fafc',
+              marginBottom: '36px'
+            }}>
+              <span className="status-indicator-dot" />
+              <span>Workspace Status: Operational</span>
+            </div>
+
+            {/* Headline & Value Prop */}
+            <h2 style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              lineHeight: 1.25,
+              color: '#ffffff',
+              letterSpacing: '-0.02em',
+              marginBottom: '14px'
+            }}>
+              Precision team orchestration & velocity.
+            </h2>
+            <p style={{
+              fontSize: '0.9rem',
+              lineHeight: 1.6,
+              color: '#94a3b8',
+              marginBottom: '32px'
+            }}>
+              Designed for modern technology teams to monitor sprints, streamline tasks, manage engineering capacity, and hit delivery deadlines with ease.
+            </p>
+
+            {/* Feature Highlights */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="auth-feature-item">
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '8px', 
+                  background: 'rgba(79, 70, 229, 0.2)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#818cf8',
+                  flexShrink: 0
+                }}>
+                  <Layers size={16} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                    Sprint & Kanban Orchestration
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '2px' }}>
+                    Interactive task boards with automated SLA tracking and priority workflows.
+                  </div>
+                </div>
+              </div>
+
+              <div className="auth-feature-item">
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '8px', 
+                  background: 'rgba(16, 185, 129, 0.2)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#34d399',
+                  flexShrink: 0
+                }}>
+                  <Clock size={16} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                    Precision Time & Capacity Tracking
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '2px' }}>
+                    One-click active timers and team capacity insights to prevent burnout.
+                  </div>
+                </div>
+              </div>
+
+              <div className="auth-feature-item">
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '8px', 
+                  background: 'rgba(236, 72, 153, 0.2)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#f472b6',
+                  flexShrink: 0
+                }}>
+                  <ShieldCheck size={16} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                    Role-Based Access Control (RBAC)
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '2px' }}>
+                    Dedicated portals for project managers and engineering contributors.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Security Badge */}
+          <div style={{ 
+            paddingTop: '28px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.75rem',
+            color: '#64748b'
+          }}>
+            <span>End-to-End Encrypted Session</span>
+            <span>v5.2.0 Enterprise</span>
+          </div>
+        </div>
 
       </div>
     </div>

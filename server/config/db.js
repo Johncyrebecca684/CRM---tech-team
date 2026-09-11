@@ -1,4 +1,12 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Ensure public DNS fallback for MongoDB Atlas SRV record resolution
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore if dns setServers fails in constrained environments
+}
 
 export const connectDB = async () => {
   try {
@@ -9,3 +17,4 @@ export const connectDB = async () => {
     // Non-fatal fallback for setup resilience
   }
 };
+

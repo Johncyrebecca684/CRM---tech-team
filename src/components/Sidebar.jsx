@@ -4,14 +4,24 @@ import {
   Crown,
   LayoutDashboard, 
   UserCheck, 
+  CalendarCheck, 
   Kanban, 
   ListTodo, 
   Clock, 
   Users, 
-  FileText,
-  Zap,
+  FileText, 
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  User,
+  LogOut,
+  Layers,
+  Settings,
+  Award,
+  Headphones,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -20,104 +30,208 @@ export const Sidebar = () => {
     setCurrentTab, 
     userRole, 
     currentUser,
+    logout,
     tasks, 
     employees, 
-    selectedEmployeeViewId 
+    selectedEmployeeViewId,
+    setSelectedEmployeeViewId,
+    isSidebarCollapsed,
+    toggleSidebarCollapse
   } = useCrm();
-
-  const totalTasksCount = tasks.length;
-  const completedTasksCount = tasks.filter((t) => t.status === 'Completed').length;
-  const inProgressTasksCount = tasks.filter((t) => t.status === 'In Progress').length;
 
   const currentEmployee = employees.find((e) => e.id === selectedEmployeeViewId) || employees[0];
 
   const navItems = [
     {
       id: 'admin-dashboard',
-      label: 'Admin Overview',
+      label: 'Dashboard',
       icon: LayoutDashboard,
-      roles: ['admin'],
-      badge: null
+      roles: ['admin']
     },
     {
       id: 'employee-page',
-      label: userRole === 'employee' ? 'My Work Page' : `${currentEmployee?.name?.split(' ')[0] || 'Employee'}'s Page`,
-      icon: UserCheck,
+      label: userRole === 'employee' ? 'Dashboard' : 'Employees',
+      icon: userRole === 'employee' ? LayoutDashboard : UserCheck,
       roles: ['admin', 'employee'],
-      badge: 'Personal'
+      badge: userRole === 'admin' ? employees.length : undefined
     },
     {
-      id: 'kanban-tasks',
-      label: 'Kanban Board',
-      icon: Kanban,
-      roles: ['admin', 'employee'],
-      badge: totalTasksCount.toString()
+      id: 'attendance',
+      label: 'Attendance',
+      icon: CalendarCheck,
+      roles: ['admin', 'employee']
     },
     {
       id: 'list-tasks',
-      label: 'Task Data Grid',
+      label: 'Tasks',
       icon: ListTodo,
       roles: ['admin', 'employee'],
-      badge: null
+      badge: tasks?.filter(t => t.status !== 'Done' && t.status !== 'Completed')?.length || undefined
     },
     {
-      id: 'team-control',
-      label: 'Tech Team Control',
-      icon: Users,
-      roles: ['admin'],
-      badge: `${employees.length} Techs`
+      id: 'social-media-calendar',
+      label: 'Calendar',
+      icon: Clock,
+      roles: ['admin', 'super_admin']
     },
     {
       id: 'monthly-reports',
-      label: 'End-of-Month Audit',
+      label: 'Monthly Audit',
       icon: FileText,
-      roles: ['admin', 'employee'],
-      badge: 'Monthly'
+      roles: ['admin', 'super_admin']
+    },
+    {
+      id: 'performance-report',
+      label: 'Performance',
+      icon: Award,
+      roles: ['admin', 'employee', 'super_admin']
     }
   ];
 
   return (
-    <aside style={{ 
-      width: '260px', 
+    <aside className="app-sidebar" style={{ 
+      width: isSidebarCollapsed ? '72px' : '260px', 
+      height: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      zIndex: 50,
+      overflowY: 'auto',
+      overflowX: 'hidden',
       backgroundColor: 'var(--bg-sidebar)', 
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
       borderRight: '1px solid var(--border-color)',
       display: 'flex',
       flexDirection: 'column',
-      padding: '20px 16px',
-      justifyContent: 'space-between'
+      padding: isSidebarCollapsed ? '20px 8px' : '20px 14px',
+      justifyContent: 'space-between',
+      boxShadow: 'var(--shadow-sm)',
+      transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s ease'
     }}>
+      {/* TOP SECTION: BRAND HEADER & NAVIGATION */}
       <div>
-        {/* Active Role Portal Banner */}
-        <div style={{
-          padding: '12px',
-          borderRadius: 'var(--radius-sm)',
-          background: userRole === 'super_admin'
-            ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)'
-            : userRole === 'admin'
-              ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)' 
-              : 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%)',
-          border: `1px solid ${
-            userRole === 'super_admin' ? 'rgba(245, 158, 11, 0.35)' : userRole === 'admin' ? 'rgba(99, 102, 241, 0.25)' : 'rgba(16, 185, 129, 0.25)'
-          }`,
-          marginBottom: '24px'
+        {/* Brand Header with Collapse Toggle Button */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: isSidebarCollapsed ? 'center' : 'space-between', 
+          padding: isSidebarCollapsed ? '2px 0 16px 0' : '2px 4px 16px 4px', 
+          borderBottom: '1px solid var(--border-color)', 
+          marginBottom: '18px' 
         }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600 }}>
-            {userRole === 'super_admin' ? 'Master Authority' : userRole === 'admin' ? 'Manager Portal' : 'Tech Member Portal'}
-          </div>
-          <div style={{ fontSize: '0.9rem', fontWeight: 700, marginTop: '2px', color: userRole === 'super_admin' ? '#fbbf24' : userRole === 'admin' ? 'var(--accent-primary)' : 'var(--accent-emerald)' }}>
-            {currentUser?.name || 'User'}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Role: {userRole.toUpperCase().replace('_', ' ')}
-          </div>
+          {!isSidebarCollapsed ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'var(--accent-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  boxShadow: '0 3px 12px rgba(0, 168, 132, 0.35)',
+                  flexShrink: 0
+                }}>
+                  <Layers size={19} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    Tech Team CRM
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 500, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-primary)' }}></span>
+                    Enterprise Hub
+                  </div>
+                </div>
+              </div>
+
+              {/* Collapse Button */}
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                title="Collapse sidebar"
+                style={{
+                  background: 'var(--bg-card-hover)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.15s ease',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-main)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                }}
+              >
+                <ChevronLeft size={16} />
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                title="Expand sidebar"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'var(--accent-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  boxShadow: '0 3px 12px rgba(0, 168, 132, 0.35)',
+                  transition: 'transform 0.15s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Menu Navigation */}
-        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dim)', fontWeight: 700, paddingLeft: '8px', marginBottom: '8px' }}>
-          RBAC Permitted Views
-        </div>
+        {/* Menu Section Label */}
+        {!isSidebarCollapsed && (
+          <div style={{ 
+            fontSize: '0.66rem', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.08em', 
+            color: 'var(--text-dim)', 
+            fontWeight: 700, 
+            paddingLeft: '8px', 
+            marginBottom: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}>
+            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent-primary)' }}></span>
+            RBAC Permitted Views
+          </div>
+        )}
         
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {/* Navigation Items */}
+        <nav className="sidebar-nav-container">
           {navItems
             .filter((item) => item.roles.includes(userRole))
             .map((item) => {
@@ -126,37 +240,45 @@ export const Sidebar = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setCurrentTab(item.id)}
+                  onClick={() => {
+                    if (item.id === 'employee-page' && userRole !== 'employee') {
+                      setSelectedEmployeeViewId(null);
+                    }
+                    setCurrentTab(item.id);
+                  }}
+                  title={isSidebarCollapsed ? item.label : undefined}
+                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: isActive ? (userRole === 'super_admin' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'var(--gradient-primary)') : 'transparent',
-                    color: isActive ? '#ffffff' : 'var(--text-muted)',
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
+                    justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+                    padding: isSidebarCollapsed ? '9px 0' : '8px 10px'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Icon size={18} color={isActive ? '#ffffff' : 'currentColor'} />
-                    <span>{item.label}</span>
+                  {/* Active Indicator Bar on left edge */}
+                  {isActive && !isSidebarCollapsed && (
+                    <div className="sidebar-active-indicator" />
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <div className="sidebar-nav-icon-box">
+                      <Icon size={17} />
+                    </div>
+                    {!isSidebarCollapsed && (
+                      <span style={{ 
+                        fontSize: '0.86rem', 
+                        fontWeight: isActive ? 700 : 500,
+                        letterSpacing: '-0.01em',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {item.label}
+                      </span>
+                    )}
                   </div>
-                  {item.badge && (
-                    <span style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 8px',
-                      borderRadius: '10px',
-                      background: isActive ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
-                      color: isActive ? '#ffffff' : 'var(--text-muted)',
-                      fontWeight: 600
-                    }}>
+
+                  {/* Optional dynamic badge */}
+                  {!isSidebarCollapsed && item.badge !== undefined && (
+                    <span className="sidebar-badge">
                       {item.badge}
                     </span>
                   )}
@@ -166,24 +288,44 @@ export const Sidebar = () => {
         </nav>
       </div>
 
-      {/* Task Summary Stat Box */}
-      <div className="glass-panel" style={{ padding: '14px', marginTop: 'auto', background: 'rgba(15, 23, 42, 0.6)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>Workspace Pulse</span>
-          <Zap size={14} color="var(--accent-amber)" />
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 8px', borderRadius: '6px' }}>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Done</div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-emerald)' }}>{completedTasksCount}</div>
+      {/* BOTTOM SECTION: USER STATUS CARD */}
+      {!isSidebarCollapsed && (
+        <div style={{
+          padding: '12px',
+          borderRadius: '12px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginTop: '16px'
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: 'rgba(0, 168, 132, 0.15)',
+            color: 'var(--accent-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            flexShrink: 0
+          }}>
+            {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : (userRole === 'admin' ? 'A' : 'E')}
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 8px', borderRadius: '6px' }}>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Active</div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{inProgressTasksCount}</div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {currentUser?.name || (userRole === 'admin' ? 'Administrator' : 'Team Member')}
+            </div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'capitalize' }}>
+              ● {userRole.replace('_', ' ')}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 };
+

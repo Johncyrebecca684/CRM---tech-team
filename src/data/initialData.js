@@ -1,13 +1,13 @@
-// Options extracted from August(SCS Tech Productivity).csv
 export const CLIENT_PROJECT_OPTIONS = [
-  'Nammude Laundry',
-  'Salavai Laundry Store',
-  'Salavai Laundry',
-  'KC',
   'SCS',
-  'Amlan laundry',
-  'Kleidercare Ecommerce',
-  'Internal Project'
+  'THE SALAVAI LAUNDRY',
+  'NAMMUDE LAUNDRY',
+  'THE AMLAN LAUNDRY',
+  'PARISHUDHA LAUNDRY',
+  'SALAVAI STORE',
+  'KLEIDER CARE',
+  'NAMMUDE STORE',
+  'OTHERS'
 ];
 
 export const ACTIVITY_OPTIONS = [
@@ -15,11 +15,29 @@ export const ACTIVITY_OPTIONS = [
   'Carousel',
   'Adhoc',
   'Social Media Mgmt',
-  'Support & Others',
   'Website',
   'Creatives',
   'Reel',
   'Video'
+];
+
+export const FORMAT_OPTIONS = [
+  'Static Poster',
+  'Reel',
+  'Carousel',
+  'Video',
+  'Story',
+  'Banner',
+  'Website UI',
+  'Document',
+  'Other'
+];
+
+export const THEME_OPTIONS = [
+  'Digital Marketing',
+  'BPP',
+  'SIGP',
+  'CRM'
 ];
 
 export const CORE_ACTIVITY_OPTIONS = [
@@ -44,23 +62,148 @@ export const SLA_STATUS_OPTIONS = [
   'Red'
 ];
 
-// Initial employees from the CSV
+// 10 Mock Employees for Testing & Demonstration
 export const INITIAL_EMPLOYEES = [
-  { id: 'emp-1', name: 'Kamini', role: 'Graphic Designer', email: 'kamini@techteam.dev', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80', skills: ['Social Media', 'Design'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-01-10' },
-  { id: 'emp-2', name: 'Tamil Selvi', role: 'Content Specialist', email: 'tamil@techteam.dev', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', skills: ['Content Creation'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-02-01' },
-  { id: 'emp-3', name: 'Hari varman', role: 'UI/UX Designer', email: 'hari@techteam.dev', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', skills: ['Figma', 'Branding'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-01-15' },
-  { id: 'emp-4', name: 'Mahima', role: 'Digital Marketer', email: 'mahima@techteam.dev', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', skills: ['SEO', 'Instagram'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-03-01' },
-  { id: 'emp-5', name: 'Johncy Rebecca', role: 'Media Specialist', email: 'johncy@techteam.dev', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', skills: ['Creatives', 'Banner'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-02-20' },
-  { id: 'emp-6', name: 'Martin David', role: 'Software Engineer', email: 'martin@techteam.dev', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', skills: ['React', 'Node.js', 'E-commerce'], weeklyCapacityHours: 40, status: 'Active', joinedDate: '2024-01-05' }
+  {
+    id: "emp-1",
+    name: "Johncyrebecca",
+    email: "johncyrebecca@gmail.com",
+    role: "Associate Software Engineer",
+    department: "Frontend & Marketing Tech",
+    status: "Active",
+    joinedDate: "2024-03-01",
+    skills: ["Social Media", "Creatives", "Canva", "SEO", "React", "Banner Design"],
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43210",
+    location: "Chennai, India"
+  },
+  {
+    id: "emp-2",
+    name: "Arjun Nair",
+    email: "arjun.nair@techteam.dev",
+    role: "Senior Full Stack Engineer",
+    department: "Core Engineering",
+    status: "Active",
+    joinedDate: "2023-08-15",
+    skills: ["React", "Node.js", "MongoDB", "AWS", "System Architecture", "GraphQL"],
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43211",
+    location: "Bangalore, India"
+  },
+  {
+    id: "emp-3",
+    name: "Priya Sundaram",
+    email: "priya.sundaram@techteam.dev",
+    role: "Lead UI/UX Designer",
+    department: "Product Design",
+    status: "Active",
+    joinedDate: "2024-01-10",
+    skills: ["Figma", "UI/UX Design", "Design Systems", "Wireframing", "Prototyping", "Adobe XD"],
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43212",
+    location: "Chennai, India"
+  },
+  {
+    id: "emp-4",
+    name: "Karthik Raja",
+    email: "karthik.raja@techteam.dev",
+    role: "DevOps & Cloud Engineer",
+    department: "Infrastructure & Cloud",
+    status: "Active",
+    joinedDate: "2023-11-20",
+    skills: ["Docker", "Kubernetes", "CI/CD", "Terraform", "AWS", "Linux"],
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43213",
+    location: "Hyderabad, India"
+  },
+  {
+    id: "emp-5",
+    name: "Sneha Patel",
+    email: "sneha.patel@techteam.dev",
+    role: "Digital Marketing Specialist",
+    department: "Growth & Marketing",
+    status: "Active",
+    joinedDate: "2024-02-01",
+    skills: ["SEO", "Google Ads", "Content Strategy", "Social Media", "Copywriting", "Analytics"],
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43214",
+    location: "Mumbai, India"
+  },
+  {
+    id: "emp-6",
+    name: "Rohan Sharma",
+    email: "rohan.sharma@techteam.dev",
+    role: "Frontend Developer",
+    department: "Frontend Engineering",
+    status: "Active",
+    joinedDate: "2024-04-12",
+    skills: ["React", "TypeScript", "TailwindCSS", "Next.js", "Redux", "Jest"],
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43215",
+    location: "Delhi, India"
+  },
+  {
+    id: "emp-7",
+    name: "Ananya Iyer",
+    email: "ananya.iyer@techteam.dev",
+    role: "Backend Developer",
+    department: "Backend Engineering",
+    status: "Active",
+    joinedDate: "2024-03-18",
+    skills: ["Node.js", "Express", "PostgreSQL", "Redis", "REST APIs", "Microservices"],
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43216",
+    location: "Pune, India"
+  },
+  {
+    id: "emp-8",
+    name: "Vikram Malhotra",
+    email: "vikram.malhotra@techteam.dev",
+    role: "QA Automation Engineer",
+    department: "Quality Engineering",
+    status: "Active",
+    joinedDate: "2024-02-15",
+    skills: ["Cypress", "Playwright", "Selenium", "API Testing", "Automation", "Postman"],
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43217",
+    location: "Bangalore, India"
+  },
+  {
+    id: "emp-9",
+    name: "Divya Menon",
+    email: "divya.menon@techteam.dev",
+    role: "Motion & Graphic Designer",
+    department: "Creative Media",
+    status: "Active",
+    joinedDate: "2024-05-02",
+    skills: ["After Effects", "Premiere Pro", "Motion Graphics", "Reels", "Brand Creatives", "Photoshop"],
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43218",
+    location: "Kochi, India"
+  },
+  {
+    id: "emp-10",
+    name: "Siddharth Roy",
+    email: "siddharth.roy@techteam.dev",
+    role: "Data & Performance Analyst",
+    department: "Data Analytics",
+    status: "Active",
+    joinedDate: "2024-01-22",
+    skills: ["Python", "SQL", "Power BI", "Google Analytics 4", "Data Pipelines", "Reporting"],
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+    phone: "+91 98765 43219",
+    location: "Kolkata, India"
+  }
 ];
 
 export const DEFAULT_ADMIN = {
   id: "admin-1",
-  name: "Tech Admin",
+  name: "Aftab Alika",
   email: "admin@techteam.dev",
   role: "admin",
+  title: "Engineering Manager",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  joinedDate: new Date().toISOString().split('T')[0]
+  joinedDate: "2024-01-01"
 };
 
 // Seed task records parsed from August(SCS Tech Productivity).csv
@@ -83,10 +226,91 @@ export const INITIAL_TASKS = [
   { id: 'TASK-116', sNo: 16, date: '2026-08-03', clientProject: 'Nammude Laundry', activity: 'Carousel', project: 'C16', coreActivity: 'Social Media Content', assignedToId: 'emp-5', workStartDate: '2026-08-05', targetEndDate: '2026-08-11', actualEndDate: '2026-08-07', slaStatus: 'Green', status: 'Completed', commentsUpdates: 'c5 for nammude laundry, salavai, amlan', estimatedHours: 12, timeSpentHours: 12 },
   { id: 'TASK-117', sNo: 18, date: '2026-08-03', clientProject: 'Amlan laundry', activity: 'Static', project: 'S17', coreActivity: 'Social Media Content', assignedToId: 'emp-3', workStartDate: '2026-08-03', targetEndDate: '2026-08-21', actualEndDate: null, slaStatus: 'Green', status: 'Yet to start', commentsUpdates: 'Id-E-Emilad', estimatedHours: 8, timeSpentHours: 0 },
   { id: 'TASK-118', sNo: 19, date: '2026-08-03', clientProject: 'Salavai Laundry Store', activity: 'Static', project: 'S18', coreActivity: 'Social Media Content', assignedToId: 'emp-5', workStartDate: '2026-08-03', targetEndDate: '2026-08-25', actualEndDate: null, slaStatus: 'Green', status: 'On Hold', commentsUpdates: 'creating a banner for salavai laundry store', estimatedHours: 15, timeSpentHours: 4 },
-  { id: 'TASK-119', sNo: 20, date: '2026-08-03', clientProject: 'Salavai Laundry Store', activity: 'Support & Others', project: 'S19', coreActivity: 'Others', assignedToId: 'emp-3', workStartDate: '2026-08-03', targetEndDate: '2026-08-17', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Package material design for Salavai store', estimatedHours: 20, timeSpentHours: 8 },
+  { id: 'TASK-119', sNo: 20, date: '2026-08-03', clientProject: 'Salavai Laundry Store', activity: 'Creatives', project: 'S19', coreActivity: 'Social Media Content', assignedToId: 'emp-3', workStartDate: '2026-08-03', targetEndDate: '2026-08-17', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Package material design for Salavai store', estimatedHours: 20, timeSpentHours: 8 },
   { id: 'TASK-120', sNo: 21, date: '2026-08-03', clientProject: 'KC', activity: 'Website', project: 'S20', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-3', workStartDate: '2026-08-03', targetEndDate: '2026-08-04', actualEndDate: '2026-08-05', slaStatus: 'Green', status: 'Completed', commentsUpdates: 'Banner design for Kleider care ecom', estimatedHours: 12, timeSpentHours: 12 },
   { id: 'TASK-121', sNo: 41, date: '2026-08-07', clientProject: 'KC', activity: 'Website', project: 'W01', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-6', workStartDate: '2026-08-02', targetEndDate: '2026-08-20', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Working on E commerce - implement product search, filtering, and recommendation UI components.', estimatedHours: 40, timeSpentHours: 18 },
-  { id: 'TASK-122', sNo: 42, date: '2026-08-07', clientProject: 'Salavai Laundry', activity: 'Website', project: 'W02', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-6', workStartDate: '2026-08-07', targetEndDate: '2026-08-25', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Working on Salavai Laundry Web platform', estimatedHours: 35, timeSpentHours: 12 }
+  { id: 'TASK-122', sNo: 42, date: '2026-08-07', clientProject: 'Salavai Laundry', activity: 'Website', project: 'W02', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-6', workStartDate: '2026-08-07', targetEndDate: '2026-08-25', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Working on Salavai Laundry Web platform', estimatedHours: 35, timeSpentHours: 12 },
+  { id: 'TASK-123', sNo: 43, date: '2026-08-08', clientProject: 'SCS', activity: 'Website', project: 'B01', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-7', workStartDate: '2026-08-08', targetEndDate: '2026-08-24', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Secure payment gateway & API integration', estimatedHours: 30, timeSpentHours: 15 },
+  { id: 'TASK-124', sNo: 44, date: '2026-08-09', clientProject: 'THE SALAVAI LAUNDRY', activity: 'Adhoc', project: 'Q01', coreActivity: 'Others', assignedToId: 'emp-8', workStartDate: '2026-08-09', targetEndDate: '2026-08-22', actualEndDate: '2026-08-18', slaStatus: 'Green', status: 'Completed', commentsUpdates: 'Automated end-to-end regression test suite execution', estimatedHours: 25, timeSpentHours: 25 },
+  { id: 'TASK-125', sNo: 45, date: '2026-08-10', clientProject: 'NAMMUDE LAUNDRY', activity: 'Video', project: 'V01', coreActivity: 'Social Media Content', assignedToId: 'emp-9', workStartDate: '2026-08-10', targetEndDate: '2026-08-20', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Promotional short reel animation & sound mixing', estimatedHours: 20, timeSpentHours: 10 },
+  { id: 'TASK-126', sNo: 46, date: '2026-08-11', clientProject: 'SCS', activity: 'Adhoc', project: 'D01', coreActivity: 'Growth/Leads', assignedToId: 'emp-10', workStartDate: '2026-08-11', targetEndDate: '2026-08-28', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', commentsUpdates: 'Performance telemetry dashboard & monthly SLA analytics report', estimatedHours: 35, timeSpentHours: 20 }
 ];
 
 export const INITIAL_TIME_LOGS = [];
+
+export const LEAVE_TYPE_OPTIONS = [
+  'Casual Leave',
+  'Sick Leave',
+  'Emergency Leave',
+  'Work From Home (WFH)',
+  'Half Day',
+  'Other'
+];
+
+export const INITIAL_LEAVE_REQUESTS = [
+  {
+    id: "leave-1",
+    employeeId: "emp-1",
+    employeeName: "Johncyrebecca",
+    employeeEmail: "johncyrebecca@gmail.com",
+    employeeRole: "Associate Software Engineer",
+    leaveType: "Casual Leave",
+    fromDate: "2026-09-15",
+    toDate: "2026-09-16",
+    days: 2,
+    reason: "Attending family function & personal errands",
+    appliedDate: "2026-09-10",
+    status: "Pending",
+    adminComment: ""
+  },
+  {
+    id: "leave-2",
+    employeeId: "emp-5",
+    employeeName: "Sneha Patel",
+    employeeEmail: "sneha.patel@techteam.dev",
+    employeeRole: "Digital Marketing Specialist",
+    leaveType: "Sick Leave",
+    fromDate: "2026-09-10",
+    toDate: "2026-09-10",
+    days: 0.5,
+    reason: "Doctor appointment and viral fever checkup",
+    appliedDate: "2026-09-09",
+    status: "Approved",
+    adminComment: "Approved. Take rest.",
+    reviewedBy: "Aftab Alika",
+    reviewedAt: "2026-09-09 18:00"
+  },
+  {
+    id: "leave-3",
+    employeeId: "emp-3",
+    employeeName: "Priya Sundaram",
+    employeeEmail: "priya.sundaram@techteam.dev",
+    employeeRole: "Lead UI/UX Designer",
+    leaveType: "Work From Home (WFH)",
+    fromDate: "2026-09-10",
+    toDate: "2026-09-11",
+    days: 2,
+    reason: "Remote UI/UX design sprint and asset export",
+    appliedDate: "2026-09-09",
+    status: "Approved",
+    adminComment: "WFH approved. Ensure sync on Slack.",
+    reviewedBy: "Aftab Alika",
+    reviewedAt: "2026-09-09 19:30"
+  },
+  {
+    id: "leave-4",
+    employeeId: "emp-6",
+    employeeName: "Rohan Sharma",
+    employeeEmail: "rohan.sharma@techteam.dev",
+    employeeRole: "Frontend Developer",
+    leaveType: "Emergency Leave",
+    fromDate: "2026-09-18",
+    toDate: "2026-09-19",
+    days: 2,
+    reason: "Out of station travel for urgent house relocation",
+    appliedDate: "2026-09-10",
+    status: "Pending",
+    adminComment: ""
+  }
+];
+

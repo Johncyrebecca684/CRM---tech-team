@@ -44,7 +44,7 @@ export const TimeTrackerView = () => {
           ● LIVE TIMER ENGINE
         </div>
 
-        <div style={{ fontSize: '3.5rem', fontWeight: 800, fontFamily: 'JetBrains Mono', color: '#ffffff', letterSpacing: '-0.03em' }}>
+        <div style={{ fontSize: '3.5rem', fontWeight: 800, fontFamily: 'JetBrains Mono', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>
           {activeTimer ? formatTimerSeconds(activeTimer.elapsedSeconds) : '00:00:00'}
         </div>
 
@@ -117,9 +117,7 @@ export const TimeTrackerView = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 300px' }}>
-                  {employee && (
-                    <img src={employee.avatar} alt={employee.name} style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
-                  )}
+
                   <div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
                       {employee?.name || 'Tech Member'} — <span style={{ color: 'var(--accent-primary)' }}>{log.taskId}</span>

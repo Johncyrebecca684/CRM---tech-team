@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCrm } from '../context/CrmContext';
-import { Plus, Clock, User, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Clock, User, Calendar, AlertCircle, GripVertical } from 'lucide-react';
 
 export const KanbanView = () => {
   const { 
@@ -14,6 +14,9 @@ export const KanbanView = () => {
     setIsTimeLogModalOpen,
     searchQuery
   } = useCrm();
+
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverColId, setDragOverColId] = useState(null);
 
   const columns = [
     { id: 'Yet to start', label: 'Yet to start', color: '#9ca3af', border: 'rgba(156, 163, 175, 0.3)' },
@@ -36,6 +39,13 @@ export const KanbanView = () => {
     );
   });
 
+  const handleDropOnColumn = (colId) => {
+    if (!draggedTaskId) return;
+    updateTaskStatus(draggedTaskId, colId);
+    setDraggedTaskId(null);
+    setDragOverColId(null);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
@@ -44,7 +54,7 @@ export const KanbanView = () => {
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Tech Team Kanban Board</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Plane & Taiga inspired workflow columns for 6 tech specialists
+            Interactive Kanban board — drag and drop cards across columns to update workflow status
           </p>
         </div>
 
@@ -66,18 +76,40 @@ export const KanbanView = () => {
       }}>
         {columns.map((col) => {
           const colTasks = filteredTasks.filter((t) => t.status === col.id);
+          const isDropTarget = dragOverColId === col.id;
 
           return (
             <div 
               key={col.id} 
               className="glass-panel"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragOverColId !== col.id) setDragOverColId(col.id);
+              }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                setDragOverColId(col.id);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                if (e.currentTarget.contains(e.relatedTarget)) return;
+                setDragOverColId(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDropOnColumn(col.id);
+              }}
               style={{
                 padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
                 minHeight: '600px',
-                background: 'rgba(15, 23, 42, 0.5)'
+                background: isDropTarget ? 'rgba(99, 102, 241, 0.08)' : '#f8fafc',
+                border: isDropTarget ? `2px dashed ${col.color}` : '1px solid var(--border-color)',
+                borderRadius: '12px',
+                transition: 'all 0.15s ease'
               }}
             >
               {/* Column Header */}
@@ -90,37 +122,68 @@ export const KanbanView = () => {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: col.color }} />
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{col.label}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>{col.label}</span>
                 </div>
                 <span style={{
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.08)',
-                  color: col.color
+                  background: '#ffffff',
+                  color: col.color,
+                  border: '1px solid #e2e8f0'
                 }}>
                   {colTasks.length}
                 </span>
               </div>
 
+              {/* Drop prompt when hovering */}
+              {isDropTarget && (
+                <div style={{
+                  padding: '8px',
+                  borderRadius: '6px',
+                  background: col.color,
+                  color: '#ffffff',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  animation: 'pulse 1s infinite'
+                }}>
+                  Drop here to mark as {col.label}
+                </div>
+              )}
+
               {/* Tasks List in Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
                 {colTasks.map((task) => {
                   const assignee = employees.find((e) => e.id === task.assignedToId);
+                  const isBeingDragged = draggedTaskId === task.id;
 
                   return (
                     <div
                       key={task.id}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        setDraggedTaskId(task.id);
+                        e.dataTransfer.setData('text/plain', task.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
+                      onDragEnd={() => {
+                        setDraggedTaskId(null);
+                        setDragOverColId(null);
+                      }}
                       className="glass-panel"
                       style={{
                         padding: '14px',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '10px',
-                        cursor: 'pointer',
-                        background: 'var(--bg-card-solid)',
-                        borderLeft: `3px solid ${col.color}`
+                        cursor: 'grab',
+                        background: '#ffffff',
+                        borderLeft: `4px solid ${col.color}`,
+                        opacity: isBeingDragged ? 0.4 : 1,
+                        boxShadow: isBeingDragged ? '0 6px 16px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
+                        transition: 'all 0.15s ease'
                       }}
                       onClick={() => {
                         setEditingTask(task);
@@ -129,23 +192,26 @@ export const KanbanView = () => {
                     >
                       {/* Priority / SLA Tag & Category */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent-primary)', background: 'rgba(99, 102, 241, 0.15)', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent-primary)', background: '#eef2ff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #c7d2fe' }}>
                           {task.id}
                         </span>
 
-                        <span 
-                          style={{ 
-                            fontSize: '0.75rem', 
-                            fontWeight: 700, 
-                            color: task.slaStatus === 'Red' ? '#f87171' : 'var(--accent-emerald)' 
-                          }}
-                        >
-                          ● SLA: {task.slaStatus || 'Green'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span 
+                            style={{ 
+                              fontSize: '0.75rem', 
+                              fontWeight: 700, 
+                              color: task.slaStatus === 'Red' ? '#e11d48' : 'var(--accent-emerald)' 
+                            }}
+                          >
+                            ● SLA: {task.slaStatus || 'Green'}
+                          </span>
+                          <GripVertical size={13} color="#94a3b8" />
+                        </div>
                       </div>
 
                       {/* Title & Activity */}
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#ffffff', lineHeight: 1.3 }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
                         {task.activity || task.title || 'Work Task'}
                       </div>
 
@@ -169,10 +235,6 @@ export const KanbanView = () => {
                           </div>
                         )}
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-emerald)', fontWeight: 600 }}>
-                          <Clock size={12} />
-                          <span>Spent: {task.timeSpentHours}h / {task.estimatedHours}h</span>
-                        </div>
                       </div>
 
                       {/* Assignee Footer & Column Shift Action */}
@@ -185,10 +247,7 @@ export const KanbanView = () => {
                         borderTop: '1px solid var(--border-color)'
                       }}>
                         {assignee ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <img src={assignee.avatar} alt={assignee.name} style={{ width: '22px', height: '22px', borderRadius: '50%' }} />
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{assignee.name.split(' ')[0]}</span>
-                          </div>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{assignee.name.split(' ')[0]}</span>
                         ) : <span />}
 
                         {/* Move Stage Selector */}
@@ -230,3 +289,4 @@ export const KanbanView = () => {
     </div>
   );
 };
+

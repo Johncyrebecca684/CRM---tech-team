@@ -10,7 +10,7 @@ export const TeamView = () => {
     setIsEmployeeModalOpen, 
     setEditingEmployee, 
     deleteEmployee,
-    setActiveEmployeeId,
+    setSelectedEmployeeViewId,
     setCurrentTab
   } = useCrm();
 
@@ -52,18 +52,11 @@ export const TeamView = () => {
               
               {/* Employee Card Top Header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <img 
-                    src={emp.avatar} 
-                    alt={emp.name} 
-                    style={{ width: '52px', height: '52px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-primary)' }}
-                  />
-                  <div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{emp.name}</h3>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{emp.role}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Mail size={12} /> {emp.email}
-                    </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>{emp.name}</h3>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{emp.role}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Mail size={12} /> {emp.email}
                   </div>
                 </div>
 
@@ -92,10 +85,10 @@ export const TeamView = () => {
 
               {/* Skill Stack */}
               <div>
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 700, marginBottom: '6px' }}>Technical Skills</div>
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '6px' }}>Technical Skills</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {emp.skills.map((skill, idx) => (
-                    <span key={idx} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                    <span key={idx} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', background: '#f1f5f9', color: 'var(--text-main)', border: '1px solid #e2e8f0', fontWeight: 600 }}>
                       {skill}
                     </span>
                   ))}
@@ -103,25 +96,25 @@ export const TeamView = () => {
               </div>
 
               {/* Metrics Breakdown */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', background: 'rgba(0,0,0,0.25)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', background: '#f8fafc', padding: '12px', borderRadius: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Assigned</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{empTasks.length}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Assigned</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>{empTasks.length}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--accent-emerald)' }}>Done</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--accent-emerald)', fontWeight: 600 }}>Done</div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>{empCompleted}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>Logged Hours</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{totalHours}h</div>
+                  <div style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 600 }}>In Progress</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f59e0b' }}>{empInProgress}</div>
                 </div>
               </div>
 
               {/* View Employee Page Action */}
               <button
                 onClick={() => {
-                  setActiveEmployeeId(emp.id);
+                  setSelectedEmployeeViewId(emp.id);
                   setCurrentTab('employee-page');
                 }}
                 className="btn btn-secondary"
