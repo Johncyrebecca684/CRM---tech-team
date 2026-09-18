@@ -55,14 +55,14 @@ export const AttendanceView = () => {
   const [activeTab, setActiveTab] = useState('register');
 
   // Inspected specialist ID (null = team overview, 'emp-x' = inspecting specialist)
-  const [inspectedEmployeeId, setInspectedEmployeeId] = useState(isEmployeeRole ? (currentUser?.id || 'emp-1') : null);
+  const [inspectedEmployeeId, setInspectedEmployeeId] = useState(isEmployeeRole ? (currentUser?.id || '') : null);
 
   // Leave Request Filter & Modal State
   const [leaveFilter, setLeaveFilter] = useState('All');
   const [leaveSearch, setLeaveSearch] = useState('');
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [leaveFormData, setLeaveFormData] = useState({
-    employeeId: currentUser?.id || 'emp-1',
+    employeeId: currentUser?.id || '',
     leaveType: 'Casual Leave',
     fromDate: new Date().toISOString().split('T')[0],
     toDate: new Date().toISOString().split('T')[0],
@@ -73,12 +73,12 @@ export const AttendanceView = () => {
   // Admin Review Decision Modal
   const [reviewModalData, setReviewModalData] = useState(null);
 
-  // Deduplicate employees to ensure exactly 10 distinct specialists
+  // Deduplicate employees to ensure distinct specialists
   const uniqueEmployees = useMemo(() => {
     const seen = new Set();
     return employees.filter(e => {
       if (!e || !e.id) return false;
-      if (e.email === 'admin@techteam.dev' || e.email === 'cto@techteam.dev') return false;
+      if (e.email && e.email.toLowerCase().includes('techteam.dev')) return false;
       const key = e.email ? e.email.toLowerCase().trim() : e.id;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -606,7 +606,7 @@ export const AttendanceView = () => {
 
     setIsLeaveModalOpen(false);
     setLeaveFormData({
-      employeeId: currentUser?.id || 'emp-1',
+      employeeId: currentUser?.id || '',
       leaveType: 'Casual Leave',
       fromDate: todayStr,
       toDate: todayStr,

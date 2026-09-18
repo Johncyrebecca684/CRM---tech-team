@@ -13,7 +13,8 @@ import {
   User,
   Briefcase,
   Layers,
-  Clock
+  Clock,
+  Key
 } from 'lucide-react';
 
 export const AuthView = () => {
@@ -49,6 +50,14 @@ export const AuthView = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // First-Time Login Forced Password Change State
+  const [isForcePasswordChange, setIsForcePasswordChange] = useState(false);
+  const [pendingPassUser, setPendingPassUser] = useState(null);
+  const [currentTempPass, setCurrentTempPass] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPass, setShowNewPass] = useState(false);
 
   // Step 2: Employee Profile Setup Onboarding State
   const [isCompletingProfile, setIsCompletingProfile] = useState(false);
@@ -131,6 +140,78 @@ export const AuthView = () => {
     setProfileSkills(profileSkills.filter((s) => s !== skillToRemove));
   };
 
+  // Submit Handler for First-Time Forced Password Change
+  const handleForcePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!newPassword || newPassword.trim().length < 4) {
+      setErrorMsg('New password must be at least 4 characters long.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMsg('New password and confirm password do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: pendingPassUser?.id,
+          email: pendingPassUser?.email,
+          currentPassword: currentTempPass || password,
+          newPassword: newPassword.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update password.');
+      }
+
+      setSuccessMsg('Password successfully created! Full workspace access granted. Entering portal...');
+
+      const updatedUser = {
+        ...pendingPassUser,
+        mustChangePassword: false,
+        isPasswordChanged: true
+      };
+
+      if (rememberMe) {
+        localStorage.setItem(savedPassKey, newPassword.trim());
+      }
+
+      if (setEmployees) {
+        setEmployees(prev => {
+          const matchIdx = prev.findIndex(e => e.id === updatedUser.id || (e.email && e.email.toLowerCase() === updatedUser.email.toLowerCase()));
+          if (matchIdx >= 0) {
+            const updated = [...prev];
+            updated[matchIdx] = { ...updated[matchIdx], ...updatedUser, mustChangePassword: false, isPasswordChanged: true };
+            return updated;
+          }
+          return [...prev, updatedUser];
+        });
+      }
+
+      setTimeout(() => {
+        setCurrentUser(updatedUser);
+        setSelectedEmployeeViewId(updatedUser.id);
+        setCurrentTab('employee-page');
+      }, 700);
+
+    } catch (err) {
+      setErrorMsg(err.message || 'Error setting new password.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Submit Login Handler
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -147,39 +228,31 @@ export const AuthView = () => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-
-    // 1. Client-Side Pre-Validation: Reject wrong portal attempt immediately
-    if (authRole === 'admin') {
-      const empMatch = employees.find(e => e.email && e.email.toLowerCase() === cleanEmail);
-      if (empMatch) {
-        setErrorMsg(`Access Denied: ${empMatch.name} is an Employee / Specialist. Please click the "Employee Portal" tab above to sign in.`);
-        return;
-      }
-    } else {
-      const adminMatch = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
-      if (adminMatch) {
-        setErrorMsg(`Access Notice: ${adminMatch.name} is an Administrator. Please click the "Admin Portal" tab above to sign in.`);
-        return;
-      }
-    }
-
     setIsLoading(true);
 
     try {
-      // Call authentication endpoint
+      // Call database authentication endpoint
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password, role: authRole })
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Authentication failed. Please check your credentials.');
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        if (!response.ok) {
+          throw new Error(`Server unreachable or returned error (${response.status}). Please make sure the backend server is running.`);
+        }
+        throw new Error('Invalid response received from server.');
       }
 
-      // 2. Post-Authentication Role Enforcement
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || 'Authentication failed. Please check your credentials.');
+      }
+
+      // Role Verification
       if (authRole === 'admin' && data.user.role !== 'admin' && data.user.role !== 'super_admin') {
         throw new Error(`Access Denied: ${data.user.name} does not have administrator privileges. Please click the "Employee Portal" tab to sign in.`);
       }
@@ -199,43 +272,30 @@ export const AuthView = () => {
         localStorage.setItem(savedRememberKey, 'false');
       }
 
-      // If logging in as employee and profile needs completion (role/name/skills missing or required)
-      if (authRole === 'employee') {
-        const needsSetup = data.requiresProfileSetup || 
-          !data.user.isProfileCompleted || 
-          !data.user.roleTitle || 
-          (data.user.roleTitle === 'Media Specialist' && (!data.user.skills || data.user.skills.length === 0));
+      // First-time login password change requirement
+      if (authRole === 'employee' && (data.mustChangePassword || data.user?.mustChangePassword)) {
+        setPendingPassUser(data.user);
+        setCurrentTempPass(password);
+        setIsForcePasswordChange(true);
+        setIsLoading(false);
+        return;
+      }
 
-        if (needsSetup) {
-          setPendingEmployeeUser(data.user);
-          const rawName = data.user.name && !data.user.name.includes('@') 
-            ? data.user.name 
-            : cleanEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
-          setProfileName(rawName);
-          setProfileRole(data.user.roleTitle || 'Media Specialist');
-          setProfileSkills(Array.isArray(data.user.skills) && data.user.skills.length > 0 ? data.user.skills : ['Social Media', 'Creatives']);
-          setProfileCapacity(data.user.weeklyCapacityHours ? data.user.weeklyCapacityHours.toString() : '40');
-          setIsCompletingProfile(true);
-          setIsLoading(false);
-          return;
-        }
-
-        // Already completed profile - update directory state
-        if (setEmployees) {
-          setEmployees(prev => {
-            const matchIdx = prev.findIndex(e => 
-              e.id === data.user.id || 
-              (e.email && e.email.toLowerCase() === cleanEmail)
-            );
-            if (matchIdx >= 0) {
-              const updated = [...prev];
-              updated[matchIdx] = { ...updated[matchIdx], ...data.user, email: cleanEmail };
-              return updated;
-            } else {
-              return [...prev, data.user];
-            }
-          });
-        }
+      // Sync employee into state if employee role
+      if (authRole === 'employee' && setEmployees) {
+        setEmployees(prev => {
+          const matchIdx = prev.findIndex(e => 
+            e.id === data.user.id || 
+            (e.email && e.email.toLowerCase() === cleanEmail)
+          );
+          if (matchIdx >= 0) {
+            const updated = [...prev];
+            updated[matchIdx] = { ...updated[matchIdx], ...data.user, email: cleanEmail };
+            return updated;
+          } else {
+            return [...prev, data.user];
+          }
+        });
       }
 
       setSuccessMsg(`Welcome back, ${data.user.name}! Redirecting...`);
@@ -251,73 +311,8 @@ export const AuthView = () => {
       }, 500);
 
     } catch (err) {
-      console.warn('[Auth System Notice]', err.message);
-
-      const cleanEmail = email.trim().toLowerCase();
-
-      // Check if user is attempting login through the wrong portal
-      if (authRole === 'admin') {
-        const empAcc = employees.find(e => e.email && e.email.toLowerCase() === cleanEmail);
-        if (empAcc) {
-          setErrorMsg(`Access Denied: ${empAcc.name} is an Employee / Specialist. Please click the "Employee Portal" tab above to sign in.`);
-          setIsLoading(false);
-          return;
-        }
-
-        const matchedAdmin = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
-        if (matchedAdmin) {
-          const userSession = {
-            id: matchedAdmin.id,
-            name: matchedAdmin.name,
-            email: matchedAdmin.email,
-            role: 'admin',
-            avatar: matchedAdmin.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-          };
-          if (rememberMe) {
-            localStorage.setItem(savedEmailKey, email.trim());
-            localStorage.setItem(savedPassKey, password);
-            localStorage.setItem(savedRememberKey, 'true');
-          }
-          setSuccessMsg(`Welcome back, ${userSession.name}!`);
-          setTimeout(() => {
-            setCurrentUser(userSession);
-            setCurrentTab('admin-dashboard');
-          }, 500);
-          return;
-        }
-      } else {
-        const adminAcc = admins.find(a => a.email && a.email.toLowerCase() === cleanEmail);
-        if (adminAcc) {
-          setErrorMsg(`Access Notice: ${adminAcc.name} is an Administrator. Please click the "Admin Portal" tab above to sign in.`);
-          setIsLoading(false);
-          return;
-        }
-
-        // Fallback for employee login
-        const rawName = cleanEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const tempUser = {
-          id: `emp-${Date.now()}`,
-          name: rawName,
-          email: cleanEmail,
-          role: 'employee',
-          roleTitle: 'Media Specialist',
-          skills: ['Social Media', 'Creatives'],
-          weeklyCapacityHours: 40,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(rawName)}`,
-          isProfileCompleted: false
-        };
-
-        setPendingEmployeeUser(tempUser);
-        setProfileName(rawName);
-        setProfileRole('Media Specialist');
-        setProfileSkills(['Social Media', 'Creatives']);
-        setProfileCapacity('40');
-        setIsCompletingProfile(true);
-        setIsLoading(false);
-        return;
-      }
-
-      setErrorMsg(err.message || 'Invalid email or password. Please verify your credentials or contact your administrator.');
+      console.warn('[Auth Notice]', err.message);
+      setErrorMsg(err.message || 'Invalid email or password. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -344,7 +339,7 @@ export const AuthView = () => {
       const finalRole = profileRole.trim();
       const finalSkills = profileSkills.length > 0 ? profileSkills : ['Social Media', 'Creatives'];
       const finalCapacity = parseInt(profileCapacity) || 40;
-      const finalAvatar = pendingEmployeeUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profileName.trim())}`;
+      const finalAvatar = '';
 
       const updatedData = {
         id: targetEmpId,
@@ -518,8 +513,184 @@ export const AuthView = () => {
               </span>
             </div>
 
-            {/* STEP 2: Profile & Skills Onboarding Form */}
-            {isCompletingProfile ? (
+            {/* FIRST-TIME LOGIN: Set New Password Form */}
+            {isForcePasswordChange ? (
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '16px',
+                  background: '#fef3c7',
+                  color: '#b45309',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  marginBottom: '12px'
+                }}>
+                  <Key size={14} />
+                  <span>Security Setup: First-Time Login</span>
+                </div>
+
+                <h1 style={{ 
+                  fontSize: '1.4rem', 
+                  fontWeight: 700, 
+                  color: '#0f172a', 
+                  letterSpacing: '-0.02em',
+                  marginBottom: '6px'
+                }}>
+                  Set Your New Password
+                </h1>
+                <p style={{ fontSize: '0.84rem', color: '#64748b', marginBottom: '20px' }}>
+                  Welcome, <strong>{pendingPassUser?.name}</strong>! Since this is your first time logging in with a temporary password, please create your private password to activate and unlock your employee account.
+                </p>
+
+                {/* Alert Messages */}
+                {errorMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#fef2f2',
+                    border: '1px solid #fee2e2',
+                    color: '#dc2626',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: '#f0fdf4',
+                    border: '1px solid #dcfce7',
+                    color: '#16a34a',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleForcePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Current Temp Password */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Current / Temporary Password
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Lock size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        readOnly
+                        className="auth-input"
+                        style={{ backgroundColor: '#f8fafc', color: '#64748b', cursor: 'not-allowed' }}
+                        value={currentTempPass || password}
+                      />
+                    </div>
+                  </div>
+
+                  {/* New Password */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      New Private Password *
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Key size={16} />
+                      </span>
+                      <input
+                        type={showNewPass ? 'text' : 'password'}
+                        required
+                        className="auth-input"
+                        placeholder="Enter your new secure password (min 4 chars)"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="auth-password-toggle"
+                        onClick={() => setShowNewPass(!showNewPass)}
+                      >
+                        {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm New Password */}
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '6px', fontWeight: 600 }}>
+                      Confirm New Password *
+                    </label>
+                    <div className="auth-input-group">
+                      <span className="auth-input-icon">
+                        <Key size={16} />
+                      </span>
+                      <input
+                        type={showNewPass ? 'text' : 'password'}
+                        required
+                        className="auth-input"
+                        placeholder="Re-enter your new password"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForcePasswordChange(false);
+                        setPendingPassUser(null);
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        color: '#64748b',
+                        fontSize: '0.84rem',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="auth-submit-btn"
+                      style={{ flex: 1 }}
+                    >
+                      {isLoading ? (
+                        'Securing Account...'
+                      ) : (
+                        <>
+                          <span>Set Password & Access Workspace</span>
+                          <ArrowRight size={16} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : isCompletingProfile ? (
               <div>
                 <div style={{
                   display: 'inline-flex',

@@ -1851,6 +1851,164 @@ body.dark-theme .sidebar-nav-item.active {
   color: var(--accent-primary);
 }
 
+/* ==========================================================================
+   Employee Distinct Row Theming System
+   Ensures every employee has an unmistakable row color with pure black text (#000000)
+   ========================================================================== */
+
+/* Rebecca / Johncy - Rich Sunlight Yellow */
+tr.emp-row-rebecca,
+.emp-row-rebecca {
+  background-color: #fef08a !important; /* Rich light yellow */
+  border-left: 6px solid #ca8a04 !important;
+}
+tr.emp-row-rebecca:hover,
+.emp-row-rebecca:hover {
+  background-color: #fde047 !important;
+}
+tr.emp-row-rebecca td,
+.emp-row-rebecca td,
+tr.emp-row-rebecca span:not(.sla-tag):not(.badge-select),
+tr.emp-row-rebecca div:not(.sla-tag),
+tr.emp-row-rebecca p,
+tr.emp-row-rebecca strong,
+tr.emp-row-rebecca b {
+  color: #000000 !important;
+}
+
+/* Kamini - Fresh Mint / Emerald Green */
+tr.emp-row-kamini,
+.emp-row-kamini {
+  background-color: #d1fae5 !important;
+  border-left: 6px solid #059669 !important;
+}
+tr.emp-row-kamini:hover,
+.emp-row-kamini:hover {
+  background-color: #a7f3d0 !important;
+}
+tr.emp-row-kamini td,
+.emp-row-kamini td,
+tr.emp-row-kamini span:not(.sla-tag):not(.badge-select),
+tr.emp-row-kamini div:not(.sla-tag),
+tr.emp-row-kamini p,
+tr.emp-row-kamini strong,
+tr.emp-row-kamini b {
+  color: #000000 !important;
+}
+
+/* Tamil Selvi - Soft Royal Purple / Lavender */
+tr.emp-row-tamil,
+.emp-row-tamil {
+  background-color: #ede9fe !important;
+  border-left: 6px solid #7c3aed !important;
+}
+tr.emp-row-tamil:hover,
+.emp-row-tamil:hover {
+  background-color: #ddd6fe !important;
+}
+tr.emp-row-tamil td,
+.emp-row-tamil td,
+tr.emp-row-tamil span:not(.sla-tag):not(.badge-select),
+tr.emp-row-tamil div:not(.sla-tag),
+tr.emp-row-tamil p,
+tr.emp-row-tamil strong,
+tr.emp-row-tamil b {
+  color: #000000 !important;
+}
+
+/* Mahima - Rose Pink */
+tr.emp-row-mahima,
+.emp-row-mahima {
+  background-color: #ffe4e6 !important;
+  border-left: 6px solid #e11d48 !important;
+}
+tr.emp-row-mahima:hover,
+.emp-row-mahima:hover {
+  background-color: #fecdd3 !important;
+}
+tr.emp-row-mahima td,
+.emp-row-mahima td,
+tr.emp-row-mahima span:not(.sla-tag):not(.badge-select),
+tr.emp-row-mahima div:not(.sla-tag),
+tr.emp-row-mahima p,
+tr.emp-row-mahima strong,
+tr.emp-row-mahima b {
+  color: #000000 !important;
+}
+
+/* Harivarman - Fresh Sky Blue */
+tr.emp-row-harivarman,
+.emp-row-harivarman {
+  background-color: #e0f2fe !important;
+  border-left: 6px solid #0284c7 !important;
+}
+tr.emp-row-harivarman:hover,
+.emp-row-harivarman:hover {
+  background-color: #bae6fd !important;
+}
+tr.emp-row-harivarman td,
+.emp-row-harivarman td,
+tr.emp-row-harivarman span:not(.sla-tag):not(.badge-select),
+tr.emp-row-harivarman div:not(.sla-tag),
+tr.emp-row-harivarman p,
+tr.emp-row-harivarman strong,
+tr.emp-row-harivarman b {
+  color: #000000 !important;
+}
+
+/* Martin David - Peach / Orange */
+tr.emp-row-martindavid,
+.emp-row-martindavid {
+  background-color: #ffedd5 !important;
+  border-left: 6px solid #ea580c !important;
+}
+tr.emp-row-martindavid:hover,
+.emp-row-martindavid:hover {
+  background-color: #fed7aa !important;
+}
+tr.emp-row-martindavid td,
+.emp-row-martindavid td,
+tr.emp-row-martindavid span:not(.sla-tag):not(.badge-select),
+tr.emp-row-martindavid div:not(.sla-tag),
+tr.emp-row-martindavid p,
+tr.emp-row-martindavid strong,
+tr.emp-row-martindavid b {
+  color: #000000 !important;
+}
+
+/* System Care Admin - Indigo */
+tr.emp-row-admin,
+.emp-row-admin {
+  background-color: #e0e7ff !important;
+  border-left: 6px solid #4f46e5 !important;
+}
+tr.emp-row-admin:hover,
+.emp-row-admin:hover {
+  background-color: #c7d2fe !important;
+}
+tr.emp-row-admin td,
+.emp-row-admin td,
+tr.emp-row-admin span:not(.sla-tag):not(.badge-select),
+tr.emp-row-admin div:not(.sla-tag),
+tr.emp-row-admin p,
+tr.emp-row-admin strong,
+tr.emp-row-admin b {
+  color: #000000 !important;
+}
+
+/* Ensure all row words across all tables are crisp black */
+tr[class*="emp-row-"] td {
+  color: #000000 !important;
+  font-weight: 500;
+}
+tr[class*="emp-row-"] td strong,
+tr[class*="emp-row-"] td b {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+
+
 
 
 

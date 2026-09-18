@@ -119,7 +119,7 @@ export const EmployeeModal = () => {
                 type="email"
                 required
                 className="form-input"
-                placeholder="jordan.l@techteam.dev"
+                placeholder="employee@company.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />

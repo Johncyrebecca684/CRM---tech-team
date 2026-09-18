@@ -34,6 +34,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { uploadFileToServer, downloadFileAttachment } from '../utils/fileUpload';
+import { getEmployeeTheme, EMPLOYEE_THEMES } from '../utils/employeeColors';
 
 export const EmployeeView = () => {
   const { 
@@ -218,15 +219,6 @@ export const EmployeeView = () => {
               <UserPlus size={16} /> Register Tech Employee
             </button>
           )}
-          <button 
-            onClick={() => {
-              if (restoreDefaultEmployees) restoreDefaultEmployees();
-            }}
-            className="btn btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <RotateCcw size={16} /> Restore Default 6 Specialists
-          </button>
         </div>
       </div>
     );
@@ -274,6 +266,7 @@ export const EmployeeView = () => {
             </thead>
             <tbody>
               {employees.map((emp) => {
+                const empTheme = getEmployeeTheme(emp);
                 const empTasks = tasks.filter((t) => isTaskAssignedToEmployee(t, emp));
                 const totalEmpTasks = empTasks.length;
                 const completedEmp = empTasks.filter((t) => t.status === 'Completed').length;
@@ -286,17 +279,20 @@ export const EmployeeView = () => {
                 return (
                   <tr 
                     key={emp.id}
+                    className={empTheme.rowClass}
                     onClick={() => {
                       setSelectedEmployeeViewId(emp.id);
                       setViewMode('detail');
                     }}
                     style={{ 
                       borderBottom: '1px solid var(--border-color)', 
+                      borderLeft: `6px solid ${empTheme.primary}`,
+                      backgroundColor: empTheme.bg,
                       cursor: 'pointer',
                       transition: 'background 0.15s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = empTheme.bgHover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = empTheme.bg}
                   >
                     {/* Name & ID */}
                     <td style={{ padding: '14px 20px' }}>
@@ -790,18 +786,24 @@ export const EmployeeView = () => {
 
                   const hasFile = !!(task.taskFile?.url || task.taskFileUrl || task.taskFileName);
                   const fileName = task.taskFile?.name || task.taskFileName || 'Deliverable Document';
-                  const fileSize = task.taskFile?.size || '';
+                  const empTheme = getEmployeeTheme(currentEmployee || task);
 
                   return (
                     <tr 
                       key={task.id} 
-                      style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.15s ease' }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      className={empTheme.rowClass}
+                      style={{ 
+                        borderBottom: '1px solid var(--border-color)', 
+                        borderLeft: `6px solid ${empTheme.primary}`,
+                        backgroundColor: empTheme.bg,
+                        transition: 'background 0.15s ease' 
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = empTheme.bgHover}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = empTheme.bg}
                     >
                       {/* S.No */}
-                      <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--text-dim)' }}>
-                        {task.sNo || idx + 1}
+                      <td style={{ padding: '10px 12px', fontWeight: 700, color: '#000000', textAlign: 'center' }}>
+                        {idx + 1}
                       </td>
 
                       {/* 1. Work Start Date (Editable by employee, syncs across system) */}
@@ -816,10 +818,10 @@ export const EmployeeView = () => {
                               padding: '2px 6px',
                               width: '130px',
                               borderRadius: '6px',
-                              border: (task.workStartDate || task.startDate || task.toBePostedOn || task.date) ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                              background: 'var(--bg-app)',
-                              color: (task.workStartDate || task.startDate || task.toBePostedOn || task.date) ? 'var(--accent-primary)' : 'inherit',
-                              fontWeight: 600
+                              border: (task.workStartDate || task.startDate || task.toBePostedOn || task.date) ? '1px solid var(--accent-primary)' : '1px solid #cbd5e1',
+                              background: '#ffffff',
+                              color: '#000000',
+                              fontWeight: 700
                             }}
                             value={task.workStartDate || task.startDate || task.toBePostedOn || task.date || ''}
                             onChange={(e) => {
@@ -834,7 +836,7 @@ export const EmployeeView = () => {
                             title="Set work start date"
                           />
                         ) : (
-                          <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>
+                          <span style={{ color: '#000000', fontWeight: 600 }}>
                             {task.workStartDate || task.startDate || task.toBePostedOn || task.date || '—'}
                           </span>
                         )}
@@ -842,41 +844,41 @@ export const EmployeeView = () => {
 
                       {/* 2. Theme */}
                       <td style={{ padding: '10px 12px' }}>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', background: 'rgba(79, 70, 229, 0.08)', color: 'var(--accent-primary)', border: '1px solid rgba(79, 70, 229, 0.2)' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 7px', borderRadius: '4px', background: '#ffffff', color: '#000000', border: '1px solid #cbd5e1' }}>
                           {task.theme || task.coreActivity || 'Digital Marketing'}
                         </span>
                       </td>
 
                       {/* 3. Format */}
-                      <td style={{ padding: '10px 12px', fontWeight: 500, color: 'var(--text-main)' }}>
+                      <td style={{ padding: '10px 12px', fontWeight: 600, color: '#000000' }}>
                         {task.format || task.activity || 'Static Poster'}
                       </td>
 
                       {/* 4. Assigned to */}
                       <td style={{ padding: '10px 12px' }}>
-                        <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{task.assignedToUsername || task.assignedTo || currentEmployee.name}</span>
+                        <span style={{ fontWeight: 700, color: '#000000' }}>{task.assignedToUsername || task.assignedTo || currentEmployee.name}</span>
                       </td>
 
                       {/* 5. Description */}
                       <td style={{ padding: '10px 12px', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={task.description || task.titleTopic || task.title || task.activity}>
-                        <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>
+                        <span style={{ fontWeight: 600, color: '#000000' }}>
                           {task.description || task.titleTopic || task.title || task.activity || '—'}
                         </span>
                       </td>
 
                       {/* 6. Client */}
-                      <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                      <td style={{ padding: '10px 12px', fontWeight: 700, color: '#000000' }}>
                         {task.client || task.clientProject || 'SCS'}
                       </td>
 
                       {/* 7. Actual End Date (Display Only) */}
                       <td style={{ padding: '10px 12px' }}>
                         {(task.actualEndDate || task.toBeCompletedOn || task.completedOn) ? (
-                          <span style={{ color: 'var(--accent-emerald)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem' }}>
-                            <CalendarCheck size={13} /> {task.actualEndDate || task.toBeCompletedOn || task.completedOn}
+                          <span style={{ color: '#000000', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem' }}>
+                            <CalendarCheck size={13} color={isSlaGreen ? '#059669' : '#e11d48'} /> {task.actualEndDate || task.toBeCompletedOn || task.completedOn}
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>—</span>
+                          <span style={{ color: '#000000', opacity: 0.75, fontSize: '0.78rem' }}>—</span>
                         )}
                       </td>
 

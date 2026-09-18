@@ -31,19 +31,31 @@ import {
 
 export const EmployeePerformanceDossier = ({ initialEmployeeId = null, onBack = null }) => {
   const { 
-    employees, 
-    tasks, 
-    attendanceRecords, 
-    currentUser, 
-    userRole, 
+    employees = [], 
+    tasks = [], 
+    attendanceRecords = [], 
+    leaveRequests = [],
+    currentUser = null, 
+    userRole = 'employee', 
     selectedMonth 
   } = useCrm();
 
   const isEmployeeRole = userRole === 'employee';
 
   // Active Selected Employee
-  const defaultEmpId = initialEmployeeId || (isEmployeeRole ? currentUser?.id : (employees[0]?.id || 'emp-sample-1'));
+  const defaultEmpId = initialEmployeeId || (isEmployeeRole ? (currentUser?.id || currentUser?._id) : (employees[0]?.id || ''));
   const [selectedEmpId, setSelectedEmpId] = useState(defaultEmpId);
+
+  // Synchronize selectedEmpId when initialEmployeeId, currentUser, or employees update
+  useEffect(() => {
+    if (initialEmployeeId) {
+      setSelectedEmpId(initialEmployeeId);
+    } else if (isEmployeeRole && currentUser) {
+      setSelectedEmpId(currentUser.id || currentUser._id || '');
+    } else if (employees.length > 0 && (!selectedEmpId || !employees.some(e => e.id === selectedEmpId))) {
+      setSelectedEmpId(employees[0].id);
+    }
+  }, [initialEmployeeId, isEmployeeRole, currentUser, employees]);
 
   // Active Dashboard Tab for screen view
   const [activeTab, setActiveTab] = useState('overview');
@@ -54,58 +66,119 @@ export const EmployeePerformanceDossier = ({ initialEmployeeId = null, onBack = 
 
   // Find or construct base employee info
   const selectedEmployee = useMemo(() => {
-    const found = employees.find(e => e.id === selectedEmpId);
-    if (found) return found;
+    let found = null;
     
-    return {
-      id: 'EMP-0247',
-      name: 'Arjun Nair',
-      role: 'Digital Marketing Executive',
-      department: 'Marketing',
-      email: 'arjun.nair@example.com',
-      phone: '+91 98XX XXX 247',
-      emergencyContact: 'Anita Nair - +91 98XX XXX 842',
-      preferredContact: 'Email',
-      officeLocation: 'Chennai, Tamil Nadu',
-      reportingManager: 'Priya Menon - Marketing Manager',
-      joinedDate: '17 July 2023',
-      employmentType: 'Full-time',
-      workLocation: 'Chennai - Hybrid',
-      status: 'Active',
-      probationStatus: 'Completed',
-      workShift: '09:30 AM - 06:30 PM',
-      managerialLevel: 'Individual Contributor',
-      currentGrade: 'G3',
-      tenure: '3 years 1 month (as of 10 Sep 2026)',
-      skills: ['SEO', 'Paid Media', 'Analytics', 'Content Planning'],
-      certifications: 'Google Ads Search, GA4, HubSpot Email Marketing',
-      salaryAnnual: 'INR 7,20,000',
-      salaryMonthlyGross: 'INR 60,000',
-      salaryDeductions: 'INR 7,100',
-      salaryMonthlyNet: 'INR 52,900',
-      noticePeriod: '60 days'
-    };
-  }, [employees, selectedEmpId]);
+    // 1. Try to find by selectedEmpId in employees list
+    if (selectedEmpId) {
+      found = employees.find(e => 
+        (e.id && e.id === selectedEmpId) || 
+        (e._id && e._id === selectedEmpId)
+      );
+    }
 
-  // Generate complete 16-section document data
+    // 2. If employee role or currentUser is logged in, prioritize matching currentUser
+    if (!found && (isEmployeeRole || currentUser)) {
+      if (currentUser) {
+        found = employees.find(e => 
+          (currentUser.id && (e.id === currentUser.id || e._id === currentUser.id)) ||
+          (currentUser.email && e.email && e.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim()) ||
+          (currentUser.name && e.name && e.name.toLowerCase().trim() === currentUser.name.toLowerCase().trim())
+        );
+        if (!found && isEmployeeRole) {
+          found = currentUser;
+        }
+      }
+    }
+
+    // 3. Fallback to first available employee or currentUser
+    if (!found) {
+      if (employees.length > 0) {
+        found = employees[0];
+      } else if (currentUser) {
+        found = currentUser;
+      }
+    }
+
+    const baseEmp = found || currentUser || {};
+    const effectiveName = baseEmp.name || currentUser?.name || 'Employee';
+    const effectiveEmail = baseEmp.email || currentUser?.email || '';
+    const effectiveRole = baseEmp.role || baseEmp.roleTitle || currentUser?.roleTitle || currentUser?.role || 'Specialist';
+    const effectiveId = baseEmp.id || currentUser?.id || 'EMP-01';
+
+    return {
+      ...baseEmp,
+      id: effectiveId,
+      name: effectiveName,
+      role: effectiveRole,
+      department: baseEmp.department || 'Creative & Tech Operations',
+      email: effectiveEmail,
+      phone: baseEmp.phone || '+91 98XX XXX XXX',
+      emergencyContact: baseEmp.emergencyContact || 'Emergency Contact - +91 98XX XXX XXX',
+      preferredContact: baseEmp.preferredContact || 'Email',
+      officeLocation: baseEmp.officeLocation || 'Chennai, Tamil Nadu',
+      reportingManager: baseEmp.reportingManager || 'System Care Admin',
+      joinedDate: baseEmp.joinedDate || currentUser?.joinedDate || '01 June 2026',
+      employmentType: baseEmp.employmentType || 'Full-time',
+      workLocation: baseEmp.workLocation || 'Chennai - Office',
+      status: baseEmp.status || 'Active',
+      probationStatus: baseEmp.probationStatus || 'Completed',
+      workShift: baseEmp.workShift || '09:30 AM - 06:30 PM',
+      managerialLevel: baseEmp.managerialLevel || 'Specialist Contributor',
+      currentGrade: baseEmp.currentGrade || 'Level 1',
+      tenure: baseEmp.tenure || 'Active Specialist',
+      skills: Array.isArray(baseEmp.skills) && baseEmp.skills.length > 0 
+        ? baseEmp.skills 
+        : (Array.isArray(currentUser?.skills) && currentUser.skills.length > 0 
+            ? currentUser.skills 
+            : ['Digital Marketing', 'Creative Strategy', 'Content Creation']),
+      certifications: baseEmp.certifications || 'Enterprise Specialist Certification',
+      salaryAnnual: baseEmp.salaryAnnual || 'As per designation',
+      salaryMonthlyGross: baseEmp.salaryMonthlyGross || '-',
+      salaryDeductions: baseEmp.salaryDeductions || '-',
+      salaryMonthlyNet: baseEmp.salaryMonthlyNet || '-',
+      noticePeriod: baseEmp.noticePeriod || '30 days'
+    };
+  }, [employees, selectedEmpId, currentUser, isEmployeeRole]);
+
+  // Generate complete document data
   const generateInitialReportData = (emp) => {
+    const isMatch = (targetId, targetEmail, targetName) => {
+      if (emp.id && targetId && emp.id.toString().toLowerCase() === targetId.toString().toLowerCase()) return true;
+      if (emp.email && targetEmail && emp.email.toLowerCase().trim() === targetEmail.toLowerCase().trim()) return true;
+      if (emp.name && targetName) {
+        const n1 = emp.name.toLowerCase().trim();
+        const n2 = targetName.toLowerCase().trim();
+        if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) return true;
+      }
+      return false;
+    };
+
     const empTasks = tasks.filter(t => 
-      t.assignedToId === emp.id || 
-      (t.assignedToEmail && emp.email && t.assignedToEmail.toLowerCase() === emp.email.toLowerCase())
+      isMatch(t.assignedToId || t.employeeId, t.assignedToEmail, t.assignedToUsername || t.assignedTo)
     );
 
     const completedTasks = empTasks.filter(t => t.status === 'Completed');
     const inProgressTasks = empTasks.filter(t => t.status === 'In Progress' || t.status === 'Waiting for approval');
     const greenSlaCount = empTasks.filter(t => t.slaStatus !== 'Red').length;
-    const taskCompletionRate = empTasks.length > 0 ? Math.round((completedTasks.length / empTasks.length) * 100) : 94;
+    const taskCompletionRate = empTasks.length > 0 ? Math.round((completedTasks.length / empTasks.length) * 100) : 0;
 
-    const empAttendance = attendanceRecords.filter(a => a.employeeId === emp.id);
+    const empAttendance = attendanceRecords.filter(a => 
+      (emp.id && a.employeeId && a.employeeId.toString().toLowerCase() === emp.id.toString().toLowerCase()) ||
+      (emp.email && a.employeeEmail && a.employeeEmail.toLowerCase().trim() === emp.email.toLowerCase().trim())
+    );
     const presentDays = empAttendance.filter(a => a.status === 'Present' || a.status === 'Work From Home').length;
-    const attendanceRate = empAttendance.length > 0 ? ((presentDays / empAttendance.length) * 100).toFixed(1) : '96.4';
+    const attendanceRate = empAttendance.length > 0 ? ((presentDays / empAttendance.length) * 100).toFixed(1) : '100.0';
 
-    const empSkillsString = Array.isArray(emp.skills) 
+    const empSkillsString = Array.isArray(emp.skills) && emp.skills.length > 0 
       ? emp.skills.join(', ') 
-      : (emp.skills || 'SEO, Paid Media, Analytics, Content Planning');
+      : 'Digital Marketing, Creative Strategy, Content Creation';
+
+    const empLeaves = leaveRequests.filter(l => 
+      (emp.id && l.employeeId && l.employeeId.toString().toLowerCase() === emp.id.toString().toLowerCase()) ||
+      (emp.email && l.employeeEmail && l.employeeEmail.toLowerCase().trim() === emp.email.toLowerCase().trim())
+    );
+    const approvedLeaves = empLeaves.filter(l => l.status === 'Approved');
+    const totalLeaveDaysUsed = approvedLeaves.reduce((acc, curr) => acc + (Number(curr.days) || 1), 0);
 
     return {
       documentTitle: 'EMPLOYEE PERFORMANCE REPORT',
@@ -115,44 +188,44 @@ export const EmployeePerformanceDossier = ({ initialEmployeeId = null, onBack = 
       employeeStatusBadge: (emp.status || 'Active').toUpperCase() + ' EMPLOYEE',
 
       heroMetrics: {
-        attendance: `${attendanceRate}%`,
-        kpiAchievement: '92%',
-        performanceRating: '4.4 / 5',
-        leaveDaysUsed: 18
+        attendance: empAttendance.length > 0 ? `${attendanceRate}%` : '96.4%',
+        kpiAchievement: `${taskCompletionRate > 0 ? taskCompletionRate : 92}%`,
+        performanceRating: '4.8 / 5',
+        leaveDaysUsed: totalLeaveDaysUsed
       },
 
       profile: {
-        employeeId: emp.id?.startsWith('EMP-') ? emp.id : `EMP-${(emp.id || '0247').replace(/\D/g, '') || '0247'}`,
-        fullName: emp.name || 'Arjun Nair',
-        designation: emp.role || 'Digital Marketing Executive',
-        department: emp.department || 'Marketing',
-        reportingManager: emp.reportingManager || 'Priya Menon - Marketing Manager',
-        dateOfJoining: emp.joinedDate || '17 July 2023',
+        employeeId: emp.id || 'EMP-01',
+        fullName: emp.name || 'Employee',
+        designation: emp.role || 'Specialist',
+        department: emp.department || 'Creative & Tech Operations',
+        reportingManager: emp.reportingManager || 'System Care Admin',
+        dateOfJoining: emp.joinedDate || '01 June 2026',
         employmentType: emp.employmentType || 'Full-time',
-        workLocation: emp.workLocation || 'Chennai - Hybrid',
+        workLocation: emp.workLocation || 'Chennai - Office',
         currentStatus: emp.status || 'Active',
         probationStatus: emp.probationStatus || 'Completed',
         workShift: emp.workShift || '09:30 AM - 06:30 PM',
-        managerialLevel: emp.managerialLevel || 'Individual Contributor'
+        managerialLevel: emp.managerialLevel || 'Specialist Contributor'
       },
 
       contact: {
-        workEmail: emp.email || 'arjun.nair@example.com',
-        phone: emp.phone || '+91 98XX XXX 247',
-        emergencyContact: emp.emergencyContact || 'Anita Nair - +91 98XX XXX 842',
+        workEmail: emp.email || '',
+        phone: emp.phone || '+91 98XX XXX XXX',
+        emergencyContact: emp.emergencyContact || 'Emergency Contact - +91 98XX XXX XXX',
         preferredContact: emp.preferredContact || 'Email',
         officeLocation: emp.officeLocation || 'Chennai, Tamil Nadu'
       },
 
       employmentSnapshot: {
-        currentSalaryAnnual: emp.salaryAnnual || 'INR 7,20,000',
-        lastSalaryRevision: emp.lastSalaryRevision || '01 April 2026 - 8% revision',
+        currentSalaryAnnual: emp.salaryAnnual || 'As per designation',
+        lastSalaryRevision: emp.lastSalaryRevision || '01 April 2026',
         nextReviewDue: emp.nextReviewDue || '31 March 2027',
-        noticePeriod: emp.noticePeriod || '60 days',
-        currentGrade: emp.currentGrade || 'G3',
-        employmentTenure: emp.tenure || '3 years 1 month (as of 10 Sep 2026)',
+        noticePeriod: emp.noticePeriod || '30 days',
+        currentGrade: emp.currentGrade || 'Level 1',
+        employmentTenure: emp.tenure || 'Active Specialist',
         primarySkills: empSkillsString,
-        certifications: emp.certifications || 'Google Ads Search, GA4, HubSpot Email Marketing'
+        certifications: emp.certifications || 'Enterprise Specialist Certification'
       },
 
       attendanceSummary: {
@@ -304,7 +377,7 @@ export const EmployeePerformanceDossier = ({ initialEmployeeId = null, onBack = 
     };
   };
 
-  const reportData = useMemo(() => generateInitialReportData(selectedEmployee), [selectedEmployee, tasks, attendanceRecords]);
+  const reportData = useMemo(() => generateInitialReportData(selectedEmployee), [selectedEmployee, tasks, attendanceRecords, leaveRequests]);
 
   // Direct PDF Download handler
   const handleDownloadDirectPdf = async () => {

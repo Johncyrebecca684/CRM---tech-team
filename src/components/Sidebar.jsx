@@ -21,7 +21,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Share2,
+  CalendarDays
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -70,16 +72,23 @@ export const Sidebar = () => {
     },
     {
       id: 'social-media-calendar',
-      label: 'Calendar',
-      icon: Clock,
-      roles: ['admin', 'super_admin']
+      label: 'Social Calendar',
+      icon: Share2,
+      roles: ['admin', 'employee', 'super_admin']
+    },
+    {
+      id: 'task-calendar',
+      label: 'Task Calendar',
+      icon: CalendarDays,
+      roles: ['admin', 'employee', 'super_admin']
     },
     {
       id: 'monthly-reports',
-      label: 'Monthly Audit',
+      label: 'Employee Audit',
       icon: FileText,
       roles: ['admin', 'super_admin']
     },
+
     {
       id: 'performance-report',
       label: 'Performance',

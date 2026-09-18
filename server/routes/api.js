@@ -63,207 +63,7 @@ router.post('/upload', async (req, res) => {
   }
 });
 
-const MOCK_10_EMPLOYEES = [
-  {
-    id: "emp-1",
-    name: "Johncyrebecca",
-    email: "johncyrebecca@gmail.com",
-    role: "Associate Software Engineer",
-    department: "Frontend & Marketing Tech",
-    status: "Active",
-    joinedDate: "2024-03-01",
-    skills: ["Social Media", "Creatives", "Canva", "SEO", "React", "Banner Design"],
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43210",
-    location: "Chennai, India"
-  },
-  {
-    id: "emp-2",
-    name: "Arjun Nair",
-    email: "arjun.nair@techteam.dev",
-    role: "Senior Full Stack Engineer",
-    department: "Core Engineering",
-    status: "Active",
-    joinedDate: "2023-08-15",
-    skills: ["React", "Node.js", "MongoDB", "AWS", "System Architecture", "GraphQL"],
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43211",
-    location: "Bangalore, India"
-  },
-  {
-    id: "emp-3",
-    name: "Priya Sundaram",
-    email: "priya.sundaram@techteam.dev",
-    role: "Lead UI/UX Designer",
-    department: "Product Design",
-    status: "Active",
-    joinedDate: "2024-01-10",
-    skills: ["Figma", "UI/UX Design", "Design Systems", "Wireframing", "Prototyping", "Adobe XD"],
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43212",
-    location: "Chennai, India"
-  },
-  {
-    id: "emp-4",
-    name: "Karthik Raja",
-    email: "karthik.raja@techteam.dev",
-    role: "DevOps & Cloud Engineer",
-    department: "Infrastructure & Cloud",
-    status: "Active",
-    joinedDate: "2023-11-20",
-    skills: ["Docker", "Kubernetes", "CI/CD", "Terraform", "AWS", "Linux"],
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43213",
-    location: "Hyderabad, India"
-  },
-  {
-    id: "emp-5",
-    name: "Sneha Patel",
-    email: "sneha.patel@techteam.dev",
-    role: "Digital Marketing Specialist",
-    department: "Growth & Marketing",
-    status: "Active",
-    joinedDate: "2024-02-01",
-    skills: ["SEO", "Google Ads", "Content Strategy", "Social Media", "Copywriting", "Analytics"],
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43214",
-    location: "Mumbai, India"
-  },
-  {
-    id: "emp-6",
-    name: "Rohan Sharma",
-    email: "rohan.sharma@techteam.dev",
-    role: "Frontend Developer",
-    department: "Frontend Engineering",
-    status: "Active",
-    joinedDate: "2024-04-12",
-    skills: ["React", "TypeScript", "TailwindCSS", "Next.js", "Redux", "Jest"],
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43215",
-    location: "Delhi, India"
-  },
-  {
-    id: "emp-7",
-    name: "Ananya Iyer",
-    email: "ananya.iyer@techteam.dev",
-    role: "Backend Developer",
-    department: "Backend Engineering",
-    status: "Active",
-    joinedDate: "2024-03-18",
-    skills: ["Node.js", "Express", "PostgreSQL", "Redis", "REST APIs", "Microservices"],
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43216",
-    location: "Pune, India"
-  },
-  {
-    id: "emp-8",
-    name: "Vikram Malhotra",
-    email: "vikram.malhotra@techteam.dev",
-    role: "QA Automation Engineer",
-    department: "Quality Engineering",
-    status: "Active",
-    joinedDate: "2024-02-15",
-    skills: ["Cypress", "Playwright", "Selenium", "API Testing", "Automation", "Postman"],
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43217",
-    location: "Bangalore, India"
-  },
-  {
-    id: "emp-9",
-    name: "Divya Menon",
-    email: "divya.menon@techteam.dev",
-    role: "Motion & Graphic Designer",
-    department: "Creative Media",
-    status: "Active",
-    joinedDate: "2024-05-02",
-    skills: ["After Effects", "Premiere Pro", "Motion Graphics", "Reels", "Brand Creatives", "Photoshop"],
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43218",
-    location: "Kochi, India"
-  },
-  {
-    id: "emp-10",
-    name: "Siddharth Roy",
-    email: "siddharth.roy@techteam.dev",
-    role: "Data & Performance Analyst",
-    department: "Data Analytics",
-    status: "Active",
-    joinedDate: "2024-01-22",
-    skills: ["Python", "SQL", "Power BI", "Google Analytics 4", "Data Pipelines", "Reporting"],
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43219",
-    location: "Kolkata, India"
-  }
-];
-
-const MOCK_LEAVE_REQUESTS = [
-  {
-    id: "leave-1",
-    employeeId: "emp-1",
-    employeeName: "Johncyrebecca",
-    employeeEmail: "johncyrebecca@gmail.com",
-    employeeRole: "Associate Software Engineer",
-    leaveType: "Casual Leave",
-    fromDate: "2026-09-15",
-    toDate: "2026-09-16",
-    days: 2,
-    reason: "Attending family function & personal errands",
-    appliedDate: "2026-09-10",
-    status: "Pending",
-    adminComment: ""
-  },
-  {
-    id: "leave-2",
-    employeeId: "emp-5",
-    employeeName: "Sneha Patel",
-    employeeEmail: "sneha.patel@techteam.dev",
-    employeeRole: "Digital Marketing Specialist",
-    leaveType: "Sick Leave",
-    fromDate: "2026-09-10",
-    toDate: "2026-09-10",
-    days: 0.5,
-    reason: "Doctor appointment and viral fever checkup",
-    appliedDate: "2026-09-09",
-    status: "Approved",
-    adminComment: "Approved. Take rest.",
-    reviewedBy: "Aftab Alika",
-    reviewedAt: "2026-09-09 18:00"
-  },
-  {
-    id: "leave-3",
-    employeeId: "emp-3",
-    employeeName: "Priya Sundaram",
-    employeeEmail: "priya.sundaram@techteam.dev",
-    employeeRole: "Lead UI/UX Designer",
-    leaveType: "Work From Home (WFH)",
-    fromDate: "2026-09-10",
-    toDate: "2026-09-11",
-    days: 2,
-    reason: "Remote UI/UX design sprint and asset export",
-    appliedDate: "2026-09-09",
-    status: "Approved",
-    adminComment: "WFH approved. Ensure sync on Slack.",
-    reviewedBy: "Aftab Alika",
-    reviewedAt: "2026-09-09 19:30"
-  },
-  {
-    id: "leave-4",
-    employeeId: "emp-6",
-    employeeName: "Rohan Sharma",
-    employeeEmail: "rohan.sharma@techteam.dev",
-    employeeRole: "Frontend Developer",
-    leaveType: "Emergency Leave",
-    fromDate: "2026-09-18",
-    toDate: "2026-09-19",
-    days: 2,
-    reason: "Out of station travel for urgent house relocation",
-    appliedDate: "2026-09-10",
-    status: "Pending",
-    adminComment: ""
-  }
-];
-
-// GET /api/bootstrap - Fetch all data & seed default admins if empty
+// GET /api/bootstrap - Fetch all data from database
 router.get('/bootstrap', async (req, res) => {
   try {
     let employees = await Employee.find().lean();
@@ -273,89 +73,49 @@ router.get('/bootstrap', async (req, res) => {
     let attendanceRecords = await Attendance.find().sort({ date: -1 }).lean();
     let leaveRequests = await LeaveRequest.find().sort({ createdAt: -1 }).lean();
 
-    // Check if super admin or admin users exist; seed default if empty
     let superAdmins = users.filter((u) => u.role === 'super_admin');
     let admins = users.filter((u) => u.role === 'admin');
 
-    if (superAdmins.length === 0) {
-      const defaultSuperAdmin = await User.create({
-        id: 'super-1',
-        name: 'Chief Technology Officer',
-        email: 'cto@techteam.dev',
-        role: 'super_admin',
-        joinedDate: '2023-11-01',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-      });
-      superAdmins.push(defaultSuperAdmin.toObject());
-    }
-
-    if (admins.length === 0) {
-      const defaultAdmin = await User.create({
-        id: 'admin-1',
-        name: 'Aftab Alika',
-        email: 'admin@techteam.dev',
-        role: 'admin',
-        title: 'Engineering Manager',
-        joinedDate: '2024-01-01',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-      });
-      admins.push(defaultAdmin.toObject());
-    }
-
-    // Seed 10 mock employees if empty or fewer than 10
-    if (employees.length < 10) {
-      for (const mockEmp of MOCK_10_EMPLOYEES) {
-        const exists = employees.some(e => e.id === mockEmp.id || (e.email && e.email.toLowerCase() === mockEmp.email.toLowerCase()));
-        if (!exists) {
-          const created = await Employee.create(mockEmp);
-          employees.push(created.toObject());
-        }
-      }
-    }
-
-    // Seed mock leave requests if empty
-    if (leaveRequests.length === 0) {
-      for (const mockLeave of MOCK_LEAVE_REQUESTS) {
-        const created = await LeaveRequest.create(mockLeave);
-        leaveRequests.push(created.toObject());
-      }
-    }
-
-    // Return bootstrap collections
+    // Return bootstrap collections from database
     res.json({
-      employees,
-      admins,
-      superAdmins,
-      tasks,
-      timeLogs,
-      attendanceRecords,
-      leaveRequests
+      employees: employees || [],
+      admins: admins || [],
+      superAdmins: superAdmins || [],
+      tasks: tasks || [],
+      timeLogs: timeLogs || [],
+      attendanceRecords: attendanceRecords || [],
+      leaveRequests: leaveRequests || []
     });
   } catch (error) {
-    console.warn('[MongoDB Bootstrap Notice] Database connection offline or busy, providing fallback defaults:', error.message);
+    console.warn('[MongoDB Bootstrap Notice] Database error during bootstrap:', error.message);
     res.json({
-      employees: MOCK_10_EMPLOYEES,
-      admins: [
-        { id: 'admin-1', name: 'Aftab Alika', email: 'admin@techteam.dev', role: 'admin', title: 'Engineering Manager', joinedDate: '2024-01-01', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' }
-      ],
-      superAdmins: [
-        { id: 'super-1', name: 'Chief Technology Officer', email: 'cto@techteam.dev', role: 'super_admin', joinedDate: '2023-11-01' }
-      ],
+      employees: [],
+      admins: [],
+      superAdmins: [],
       tasks: [],
       timeLogs: [],
       attendanceRecords: [],
-      leaveRequests: MOCK_LEAVE_REQUESTS
+      leaveRequests: []
     });
   }
 });
 
-// Clear all mock employees endpoint
-router.post('/employees/clear-all-mock', async (req, res) => {
+// Clear all tasks and social media posts endpoint
+router.delete('/tasks/clear-all', async (req, res) => {
   try {
-    await Employee.deleteMany({ email: { $regex: /@techteam\.dev$/i } });
-    await User.deleteMany({ role: 'employee', email: { $regex: /@techteam\.dev$/i } });
-    const remaining = await Employee.find();
-    res.json({ success: true, message: 'Cleared mock employees', remainingEmployees: remaining });
+    const taskRes = await Task.deleteMany({});
+    const logRes = await TimeLog.deleteMany({});
+    res.json({ success: true, message: 'All tasks and time logs deleted', tasksDeleted: taskRes.deletedCount, logsDeleted: logRes.deletedCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/tasks/clear-all', async (req, res) => {
+  try {
+    const taskRes = await Task.deleteMany({});
+    const logRes = await TimeLog.deleteMany({});
+    res.json({ success: true, message: 'All tasks and time logs deleted', tasksDeleted: taskRes.deletedCount, logsDeleted: logRes.deletedCount });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -372,7 +132,7 @@ router.post('/auth/login', async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
 
     if (role === 'admin') {
-      // Find admin or super_admin account
+      // Find admin or super_admin account in database
       let adminAccount = await User.findOne({ 
         email: new RegExp(`^${cleanEmail}$`, 'i'),
         role: { $in: ['admin', 'super_admin'] }
@@ -386,13 +146,13 @@ router.post('/auth/login', async (req, res) => {
             error: `Access Denied: ${empAccount.name} is an Employee / Specialist. Please click 'Employee Portal' tab above to sign in.` 
           });
         }
-        return res.status(401).json({ error: 'Administrator account not found. Please verify your credentials or contact IT.' });
+        return res.status(401).json({ error: 'Administrator account not found in database. Please verify your credentials or contact IT.' });
       }
 
       // Verify password
-      if (adminAccount.password && adminAccount.password !== password && adminAccount.password !== '123456') {
+      if (adminAccount.password && adminAccount.password !== password) {
         return res.status(401).json({ error: 'Incorrect administrator password.' });
-      } else if (password) {
+      } else if (password && !adminAccount.password) {
         adminAccount.password = password;
         await adminAccount.save();
       }
@@ -404,129 +164,157 @@ router.post('/auth/login', async (req, res) => {
           name: adminAccount.name,
           email: adminAccount.email,
           role: adminAccount.role || 'admin',
-          avatar: adminAccount.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(adminAccount.name)}`
+          avatar: adminAccount.avatar || '',
+          mustChangePassword: false,
+          isPasswordChanged: false
         }
       });
 
     } else {
-      // Employee portal login
+      // Employee portal login - lookup directly in database
       let empAccount = await Employee.findOne({ email: new RegExp(`^${cleanEmail}$`, 'i') });
-
-      // If not found by exact email, check if email matches existing specialist by name or prefix (e.g. johncyrebecca@gmail.com -> Johncy Rebecca)
+      
       if (!empAccount) {
-        const usernamePrefix = cleanEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-        const allEmps = await Employee.find();
-        for (const emp of allEmps) {
-          const empCleanName = emp.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const empFirstName = emp.name.toLowerCase().split(' ')[0];
-          if (
-            empCleanName.includes(usernamePrefix) ||
-            usernamePrefix.includes(empCleanName) ||
-            usernamePrefix.startsWith(empFirstName)
-          ) {
-            empAccount = emp;
-            break;
-          }
+        // Also check in User collection for role === 'employee'
+        const userAccount = await User.findOne({ 
+          email: new RegExp(`^${cleanEmail}$`, 'i'), 
+          role: 'employee' 
+        });
+        if (userAccount) {
+          empAccount = await Employee.findOne({ id: userAccount.id }) || userAccount;
         }
       }
 
-      if (empAccount) {
-        // Automatically link and save the login email onto the specialist's employee record
-        if (empAccount.email.toLowerCase() !== cleanEmail) {
-          empAccount.email = cleanEmail;
-          await empAccount.save();
-
-          await User.findOneAndUpdate(
-            { id: empAccount.id },
-            { email: cleanEmail, name: empAccount.name, role: 'employee' },
-            { upsert: true }
-          );
-
-          await Task.updateMany(
-            { assignedToId: empAccount.id },
-            { $set: { assignedToEmail: cleanEmail, assignedToUsername: empAccount.name } }
-          );
+      if (!empAccount) {
+        // Check if admin is attempting to log in via employee portal
+        const adminAccount = await User.findOne({ 
+          email: new RegExp(`^${cleanEmail}$`, 'i'),
+          role: { $in: ['admin', 'super_admin'] }
+        });
+        if (adminAccount) {
+          return res.status(403).json({
+            error: `Access Notice: ${adminAccount.name} is an Administrator. Please click 'Admin Portal' tab above to sign in.`
+          });
         }
-
-        if (empAccount.password && empAccount.password !== password && empAccount.password !== '123456') {
-          return res.status(401).json({ error: 'Incorrect employee password.' });
-        } else if (password) {
-          empAccount.password = password;
-          await empAccount.save();
-        }
-
-        const isComplete = !!(empAccount.isProfileCompleted && empAccount.name && empAccount.role && empAccount.role !== 'Media Specialist' && empAccount.skills && empAccount.skills.length > 0);
-
-        return res.json({
-          success: true,
-          user: {
-            id: empAccount.id,
-            name: empAccount.name,
-            email: cleanEmail,
-            role: 'employee',
-            roleTitle: empAccount.role || '',
-            skills: empAccount.skills || [],
-            weeklyCapacityHours: empAccount.weeklyCapacityHours || 40,
-            avatar: empAccount.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(empAccount.name)}`,
-            isProfileCompleted: isComplete
-          },
-          requiresProfileSetup: !isComplete
+        return res.status(401).json({
+          error: 'Employee account not found in database. Please verify your email or contact your administrator.'
         });
       }
 
-      // Check if admin is trying to sign into employee portal
-      let adminAccount = await User.findOne({ 
-        email: new RegExp(`^${cleanEmail}$`, 'i'),
-        role: { $in: ['admin', 'super_admin'] }
-      });
-      if (adminAccount) {
-        return res.status(403).json({ 
-          error: `Access Notice: ${adminAccount.name} is an Administrator. Please click 'Admin Portal' tab above to sign in.` 
-        });
+      // Verify password
+      if (empAccount.password && empAccount.password !== password) {
+        return res.status(401).json({ error: 'Incorrect employee password. Please check your credentials.' });
+      } else if (password && !empAccount.password) {
+        empAccount.password = password;
+        await empAccount.save();
       }
 
-      // Auto register new employee if not matching any specialist
-      const newId = `emp-${Date.now()}`;
-      const rawName = cleanEmail.split('@')[0].replace('.', ' ');
-      const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-      const newEmp = await Employee.create({
-        id: newId,
-        name: formattedName,
-        email: cleanEmail,
-        password: password,
-        role: '',
-        skills: [],
-        isProfileCompleted: false,
-        joinedDate: new Date().toISOString().split('T')[0]
-      });
-      await User.create({
-        id: newId,
-        name: newEmp.name,
-        email: cleanEmail,
-        role: 'employee',
-        password: password
-      });
+      const mustChange = empAccount.mustChangePassword === true;
 
       return res.json({
         success: true,
+        mustChangePassword: mustChange,
         user: {
-          id: newEmp.id,
-          name: newEmp.name,
-          email: newEmp.email,
+          id: empAccount.id,
+          name: empAccount.name,
+          email: empAccount.email || cleanEmail,
           role: 'employee',
-          roleTitle: '',
-          skills: [],
-          weeklyCapacityHours: 40,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(newEmp.name)}`,
-          isProfileCompleted: false
-        },
-        requiresProfileSetup: true
+          roleTitle: empAccount.role || empAccount.roleTitle || 'Specialist',
+          skills: empAccount.skills || [],
+          weeklyCapacityHours: empAccount.weeklyCapacityHours || 40,
+          avatar: empAccount.avatar || '',
+          mustChangePassword: mustChange,
+          isPasswordChanged: !mustChange,
+          isProfileCompleted: true
+        }
       });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+// CHANGE PASSWORD ENDPOINT
+router.post('/auth/change-password', async (req, res) => {
+  try {
+    const { userId, email, currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.trim().length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+    }
+
+    let user = null;
+    if (userId) {
+      user = await User.findOne({ id: userId });
+    }
+    if (!user && email) {
+      user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+    }
+
+    if (!user) {
+      // Look up in Employee if not in User
+      const emp = await Employee.findOne({ 
+        $or: [{ id: userId }, { email: new RegExp(`^${(email || '').trim()}$`, 'i') }] 
+      });
+      if (emp) {
+        emp.password = newPassword.trim();
+        emp.mustChangePassword = false;
+        emp.isPasswordChanged = true;
+        await emp.save();
+
+        await User.findOneAndUpdate(
+          { id: emp.id },
+          { 
+            id: emp.id, 
+            name: emp.name, 
+            email: emp.email, 
+            role: 'employee', 
+            password: newPassword.trim(),
+            mustChangePassword: false,
+            isPasswordChanged: true
+          },
+          { upsert: true }
+        );
+
+        return res.json({
+          success: true,
+          message: 'Password updated successfully! Full access unlocked.'
+        });
+      }
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    // Verify current password if user already has a password set and current password was provided
+    if (user.password && currentPassword && user.password !== currentPassword && user.password !== '123456') {
+      return res.status(401).json({ error: 'Current / Temporary password does not match.' });
+    }
+
+    user.password = newPassword.trim();
+    user.mustChangePassword = false;
+    user.isPasswordChanged = true;
+    await user.save();
+
+    // Also update Employee collection
+    await Employee.findOneAndUpdate(
+      { $or: [{ id: user.id }, { email: user.email }] },
+      { 
+        $set: { 
+          password: newPassword.trim(),
+          mustChangePassword: false,
+          isPasswordChanged: true
+        } 
+      }
+    );
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully! Full access unlocked.'
+    });
+  } catch (error) {
+    console.error('[Change Password Error]:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // EMPLOYEES ENDPOINTS
 router.get('/employees', async (req, res) => {
@@ -714,8 +502,7 @@ router.post('/tasks', async (req, res) => {
       }
     }
 
-    // If dummy test domain was selected for Johncy Rebecca, route to real email
-    if (recipientName && recipientName.toLowerCase().includes('johncy') && (!recipientEmail || recipientEmail.endsWith('@techteam.dev'))) {
+    if (recipientName && recipientName.toLowerCase().includes('johncy') && !recipientEmail) {
       recipientEmail = 'johncyrebecca@gmail.com';
     }
 
@@ -744,12 +531,18 @@ router.post('/tasks', async (req, res) => {
 
 router.put('/tasks/:id', async (req, res) => {
   try {
+    const updatePayload = { ...req.body };
+    delete updatePayload._id;
+    delete updatePayload.__v;
+
     const existingTask = await Task.findOne({ id: req.params.id });
     const updated = await Task.findOneAndUpdate(
       { id: req.params.id },
-      req.body,
-      { new: true }
+      { $set: updatePayload },
+      { new: true, upsert: true }
     );
+    console.log(`[Task DB Update] Task ${req.params.id} updated. Date: ${updated.toBePostedOn || updated.date}, Status: ${updated.status}`);
+
 
     let emailResult = null;
     // Check if task assignee was changed or newly assigned
@@ -776,7 +569,7 @@ router.put('/tasks/:id', async (req, res) => {
         }
       }
 
-      if (recipientName && recipientName.toLowerCase().includes('johncy') && (!recipientEmail || recipientEmail.endsWith('@techteam.dev'))) {
+      if (recipientName && recipientName.toLowerCase().includes('johncy') && !recipientEmail) {
         recipientEmail = 'johncyrebecca@gmail.com';
       }
 

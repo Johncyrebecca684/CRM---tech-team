@@ -146,7 +146,7 @@ export const SuperAdminView = () => {
               type="email"
               required
               className="form-input"
-              placeholder="sarah.c@techteam.dev"
+              placeholder="admin@company.com"
               value={newAdminEmail}
               onChange={(e) => setNewAdminEmail(e.target.value)}
             />

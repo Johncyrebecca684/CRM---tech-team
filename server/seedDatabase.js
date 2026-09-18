@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import dns from 'dns';
 import { fileURLToPath } from 'url';
 import { Employee } from './models/Employee.js';
@@ -8,6 +9,7 @@ import { User } from './models/User.js';
 import { Task } from './models/Task.js';
 import { TimeLog } from './models/TimeLog.js';
 import { Attendance } from './models/Attendance.js';
+import { LeaveRequest } from './models/LeaveRequest.js';
 
 try {
   dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
@@ -21,264 +23,567 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://KC:KCecommerce@cluster0.b2v8pfh.mongodb.net/tech_team_crm?retryWrites=true&w=majority';
 
-export const MOCK_ADMIN = {
-  id: "admin-1",
-  name: "Aftab Alika",
-  email: "admin@techteam.dev",
-  role: "admin",
-  password: "admin",
-  joinedDate: "2024-01-01",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-};
-
-export const MOCK_SUPER_ADMIN = {
-  id: "super-1",
-  name: "Chief Technology Officer",
-  email: "cto@techteam.dev",
-  role: "super_admin",
-  password: "admin",
-  joinedDate: "2023-11-01",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-};
-
-export const MOCK_EMPLOYEES = [
+// 1. Team Members derived directly from the CSV and authorized whitelist
+export const SEED_EMPLOYEES = [
   {
-    id: "emp-1",
-    name: "Johncyrebecca",
-    email: "johncyrebecca@gmail.com",
-    role: "Associate Software Engineer",
-    department: "Frontend & Marketing Tech",
-    status: "Active",
-    joinedDate: "2024-03-01",
-    skills: ["Social Media", "Creatives", "Canva", "SEO", "React", "Banner Design"],
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43210",
-    location: "Chennai, India",
+    id: 'emp-kamini',
+    name: 'Kamini',
+    email: 'kamini@systemcaresitsolutions.com',
+    role: 'Digital Marketing Specialist',
+    password: 'Kamini@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['Digital Marketing', 'Content Strategy', 'Visual Design', 'Campaign Management'],
     weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   },
   {
-    id: "emp-2",
-    name: "Arjun Nair",
-    email: "arjun.nair@techteam.dev",
-    role: "Senior Full Stack Engineer",
-    department: "Core Engineering",
-    status: "Active",
-    joinedDate: "2023-08-15",
-    skills: ["React", "Node.js", "MongoDB", "AWS", "System Architecture", "GraphQL"],
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43211",
-    location: "Bangalore, India",
+    id: 'emp-rebecca',
+    name: 'Rebecca',
+    email: 'rebecca@systemcaresitsolutions.com',
+    role: 'Digital Marketing Specialist',
+    password: 'Rebecca@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['Digital Marketing', 'Graphic Design', 'Social Media', 'Content Creation', 'CRM'],
     weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   },
   {
-    id: "emp-3",
-    name: "Priya Sundaram",
-    email: "priya.sundaram@techteam.dev",
-    role: "Lead UI/UX Designer",
-    department: "Product Design",
-    status: "Active",
-    joinedDate: "2024-01-10",
-    skills: ["Figma", "UI/UX Design", "Design Systems", "Wireframing", "Prototyping", "Adobe XD"],
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43212",
-    location: "Chennai, India",
+    id: 'emp-tamil',
+    name: 'Tamil Selvi',
+    email: 'tamil@systemcaresitsolutions.com',
+    role: 'Creative & Media Specialist',
+    password: 'Tamil@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['Reels Production', 'Video Editing', 'Creative Direction', 'Graphic Design'],
     weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   },
   {
-    id: "emp-4",
-    name: "Karthik Raja",
-    email: "karthik.raja@techteam.dev",
-    role: "DevOps & Cloud Engineer",
-    department: "Infrastructure & Cloud",
-    status: "Active",
-    joinedDate: "2023-11-20",
-    skills: ["Docker", "Kubernetes", "CI/CD", "Terraform", "AWS", "Linux"],
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43213",
-    location: "Hyderabad, India",
+    id: 'emp-mahima',
+    name: 'Mahima',
+    email: 'mahima@systemcaresitsolutions.com',
+    role: 'Creative & Media Specialist',
+    password: 'Mahima@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['Creative Strategy', 'Social Media Management', 'Content Writing', 'Visual Design'],
     weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   },
   {
-    id: "emp-5",
-    name: "Sneha Patel",
-    email: "sneha.patel@techteam.dev",
-    role: "Digital Marketing Specialist",
-    department: "Growth & Marketing",
-    status: "Active",
-    joinedDate: "2024-02-01",
-    skills: ["SEO", "Google Ads", "Content Strategy", "Social Media", "Copywriting", "Analytics"],
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43214",
-    location: "Mumbai, India",
+    id: 'emp-harivarman',
+    name: 'Harivarman',
+    email: 'harivarman@systemcaresitsolutions.com',
+    role: 'CRM & Strategy Specialist',
+    password: 'Harivarman@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['CRM Operations', 'Digital Strategy', 'Content Writing', 'Analytics'],
     weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   },
   {
-    id: "emp-6",
-    name: "Rohan Sharma",
-    email: "rohan.sharma@techteam.dev",
-    role: "Frontend Developer",
-    department: "Frontend Engineering",
-    status: "Active",
-    joinedDate: "2024-04-12",
-    skills: ["React", "TypeScript", "TailwindCSS", "Next.js", "Redux", "Jest"],
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43215",
-    location: "Delhi, India",
+    id: 'emp-martindavid',
+    name: 'Martin David',
+    email: 'martindavid@systemcaresitsolutions.com',
+    role: 'Tech & Media Specialist',
+    password: 'Martin@2026',
+    mustChangePassword: true,
+    isPasswordChanged: false,
+    avatar: '',
+    skills: ['Tech Operations', 'Media Production', 'Quality Audit', 'Deliverables Review'],
     weeklyCapacityHours: 40,
-    isProfileCompleted: true
-  },
-  {
-    id: "emp-7",
-    name: "Ananya Iyer",
-    email: "ananya.iyer@techteam.dev",
-    role: "Backend Developer",
-    department: "Backend Engineering",
-    status: "Active",
-    joinedDate: "2024-03-18",
-    skills: ["Node.js", "Express", "PostgreSQL", "Redis", "REST APIs", "Microservices"],
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43216",
-    location: "Pune, India",
-    weeklyCapacityHours: 40,
-    isProfileCompleted: true
-  },
-  {
-    id: "emp-8",
-    name: "Vikram Malhotra",
-    email: "vikram.malhotra@techteam.dev",
-    role: "QA Automation Engineer",
-    department: "Quality Engineering",
-    status: "Active",
-    joinedDate: "2024-02-15",
-    skills: ["Cypress", "Playwright", "Selenium", "API Testing", "Automation", "Postman"],
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43217",
-    location: "Bangalore, India",
-    weeklyCapacityHours: 40,
-    isProfileCompleted: true
-  },
-  {
-    id: "emp-9",
-    name: "Divya Menon",
-    email: "divya.menon@techteam.dev",
-    role: "Motion & Graphic Designer",
-    department: "Creative Media",
-    status: "Active",
-    joinedDate: "2024-05-02",
-    skills: ["After Effects", "Premiere Pro", "Motion Graphics", "Reels", "Brand Creatives", "Photoshop"],
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43218",
-    location: "Kochi, India",
-    weeklyCapacityHours: 40,
-    isProfileCompleted: true
-  },
-  {
-    id: "emp-10",
-    name: "Siddharth Roy",
-    email: "siddharth.roy@techteam.dev",
-    role: "Data & Performance Analyst",
-    department: "Data Analytics",
-    status: "Active",
-    joinedDate: "2024-01-22",
-    skills: ["Python", "SQL", "Power BI", "Google Analytics 4", "Data Pipelines", "Reporting"],
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-    phone: "+91 98765 43219",
-    location: "Kolkata, India",
-    weeklyCapacityHours: 40,
+    status: 'Active',
+    joinedDate: '2026-06-01',
     isProfileCompleted: true
   }
 ];
 
-export const MOCK_TASKS = [
-  { id: 'TASK-101', sNo: 1, date: '2026-08-01', clientProject: 'Nammude Laundry', activity: 'Static Poster', project: 'S01', coreActivity: 'Social Media Content', assignedToId: 'emp-1', assignedTo: 'Johncyrebecca', assignedToUsername: 'Johncyrebecca', assignedToEmail: 'johncyrebecca@gmail.com', workStartDate: '2026-08-01', targetEndDate: '2026-08-22', actualEndDate: '2026-08-01', slaStatus: 'Green', status: 'Completed', description: 'C-11 static poster for nammude laundry', commentsUpdates: 'Completed and approved', estimatedHours: 8, timeSpentHours: 8 },
-  { id: 'TASK-102', sNo: 2, date: '2026-08-01', clientProject: 'Nammude Laundry', activity: 'Static Poster', project: 'S02', coreActivity: 'Social Media Content', assignedToId: 'emp-1', assignedTo: 'Johncyrebecca', assignedToUsername: 'Johncyrebecca', assignedToEmail: 'johncyrebecca@gmail.com', workStartDate: '2026-08-05', targetEndDate: '2026-08-25', actualEndDate: '2026-08-05', slaStatus: 'Green', status: 'Completed', description: 'C-12 static poster for nammude laundry', commentsUpdates: 'Client signoff received', estimatedHours: 8, timeSpentHours: 8 },
-  { id: 'TASK-103', sNo: 3, date: '2026-08-01', clientProject: 'Nammude Laundry', activity: 'Static Poster', project: 'S03', coreActivity: 'Social Media Content', assignedToId: 'emp-2', assignedTo: 'Arjun Nair', assignedToUsername: 'Arjun Nair', assignedToEmail: 'arjun.nair@techteam.dev', workStartDate: '2026-08-01', targetEndDate: '2026-08-05', actualEndDate: '2026-08-05', slaStatus: 'Green', status: 'Completed', description: 'Architecture & service refactoring', commentsUpdates: 'Deployed to staging', estimatedHours: 6, timeSpentHours: 6 },
-  { id: 'TASK-104', sNo: 4, date: '2026-08-01', clientProject: 'Nammude Laundry', activity: 'Carousel', project: 'C04', coreActivity: 'Social Media Content', assignedToId: 'emp-2', assignedTo: 'Arjun Nair', assignedToUsername: 'Arjun Nair', assignedToEmail: 'arjun.nair@techteam.dev', workStartDate: '2026-08-01', targetEndDate: '2026-09-05', actualEndDate: null, slaStatus: 'Green', status: 'Yet to start', description: 'GraphQL caching layer optimization', commentsUpdates: 'Pending sprint 2', estimatedHours: 12, timeSpentHours: 0 },
-  { id: 'TASK-105', sNo: 5, date: '2026-08-01', clientProject: 'Salavai Laundry Store', activity: 'Static Poster', project: 'S05', coreActivity: 'Social Media Content', assignedToId: 'emp-3', assignedTo: 'Priya Sundaram', assignedToUsername: 'Priya Sundaram', assignedToEmail: 'priya.sundaram@techteam.dev', workStartDate: '2026-08-01', targetEndDate: '2026-08-08', actualEndDate: null, slaStatus: 'Green', status: 'Waiting for approval', description: 'Mobile design system component library', commentsUpdates: 'Submitted for lead review', estimatedHours: 10, timeSpentHours: 4 },
-  { id: 'TASK-106', sNo: 6, date: '2026-08-01', clientProject: 'KC', activity: 'Adhoc', project: 'A01', coreActivity: 'Others', assignedToId: 'emp-4', assignedTo: 'Karthik Raja', assignedToUsername: 'Karthik Raja', assignedToEmail: 'karthik.raja@techteam.dev', workStartDate: '2026-08-01', targetEndDate: '2026-08-01', actualEndDate: '2026-08-01', slaStatus: 'Green', status: 'Completed', description: 'Docker multi-stage build optimization', commentsUpdates: 'Pipeline latency reduced by 40%', estimatedHours: 5, timeSpentHours: 5 },
-  { id: 'TASK-107', sNo: 7, date: '2026-08-01', clientProject: 'SCS', activity: 'Social Media Mgmt', project: 'S07', coreActivity: 'Social Media Content', assignedToId: 'emp-5', assignedTo: 'Sneha Patel', assignedToUsername: 'Sneha Patel', assignedToEmail: 'sneha.patel@techteam.dev', workStartDate: '2026-08-01', targetEndDate: '2026-08-04', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', description: 'Monthly digital marketing acquisition campaign', commentsUpdates: 'Creative copy finalized', estimatedHours: 15, timeSpentHours: 6 },
-  { id: 'TASK-108', sNo: 8, date: '2026-07-31', clientProject: 'SCS', activity: 'Static Poster', project: 'S08', coreActivity: 'Social Media Content', assignedToId: 'emp-6', assignedTo: 'Rohan Sharma', assignedToUsername: 'Rohan Sharma', assignedToEmail: 'rohan.sharma@techteam.dev', workStartDate: '2026-07-31', targetEndDate: '2026-08-01', actualEndDate: '2026-07-31', slaStatus: 'Green', status: 'Completed', description: 'Responsive dashboard grid layouts', commentsUpdates: 'Cross-browser tested', estimatedHours: 6, timeSpentHours: 6 },
-  { id: 'TASK-109', sNo: 9, date: '2026-08-08', clientProject: 'SCS', activity: 'Website', project: 'B01', coreActivity: 'Web & Search Visibility', assignedToId: 'emp-7', assignedTo: 'Ananya Iyer', assignedToUsername: 'Ananya Iyer', assignedToEmail: 'ananya.iyer@techteam.dev', workStartDate: '2026-08-08', targetEndDate: '2026-08-24', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', description: 'Payment gateway webhooks & Redis session store', commentsUpdates: 'Endpoint security audit complete', estimatedHours: 30, timeSpentHours: 15 },
-  { id: 'TASK-110', sNo: 10, date: '2026-08-09', clientProject: 'THE SALAVAI LAUNDRY', activity: 'Adhoc', project: 'Q01', coreActivity: 'Others', assignedToId: 'emp-8', assignedTo: 'Vikram Malhotra', assignedToUsername: 'Vikram Malhotra', assignedToEmail: 'vikram.malhotra@techteam.dev', workStartDate: '2026-08-09', targetEndDate: '2026-08-22', actualEndDate: '2026-08-18', slaStatus: 'Green', status: 'Completed', description: 'Automated end-to-end regression test suite execution', commentsUpdates: '100% test pass rate', estimatedHours: 25, timeSpentHours: 25 },
-  { id: 'TASK-111', sNo: 11, date: '2026-08-10', clientProject: 'NAMMUDE LAUNDRY', activity: 'Video', project: 'V01', coreActivity: 'Social Media Content', assignedToId: 'emp-9', assignedTo: 'Divya Menon', assignedToUsername: 'Divya Menon', assignedToEmail: 'divya.menon@techteam.dev', workStartDate: '2026-08-10', targetEndDate: '2026-08-20', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', description: 'Promotional short reel animation & sound mixing', commentsUpdates: 'Draft render submitted', estimatedHours: 20, timeSpentHours: 10 },
-  { id: 'TASK-112', sNo: 12, date: '2026-08-11', clientProject: 'SCS', activity: 'Adhoc', project: 'D01', coreActivity: 'Growth/Leads', assignedToId: 'emp-10', assignedTo: 'Siddharth Roy', assignedToUsername: 'Siddharth Roy', assignedToEmail: 'siddharth.roy@techteam.dev', workStartDate: '2026-08-11', targetEndDate: '2026-08-28', actualEndDate: null, slaStatus: 'Green', status: 'In Progress', description: 'Performance telemetry dashboard & monthly SLA analytics report', commentsUpdates: 'Aggregated client retention numbers', estimatedHours: 35, timeSpentHours: 20 }
+export const SEED_ADMINS = [
+  {
+    id: 'admin-1',
+    name: 'System Care Admin',
+    email: 'support@systemcaresitsolutions.com',
+    role: 'admin',
+    password: 'Admin@2026',
+    mustChangePassword: false,
+    isPasswordChanged: false,
+    joinedDate: '2026-01-01',
+    avatar: ''
+  }
 ];
 
-async function seedDatabase() {
-  try {
-    console.log('[Seed] Connecting to MongoDB:', MONGO_URI);
-    await mongoose.connect(MONGO_URI);
-    console.log('[Seed] Connected successfully to MongoDB.');
-
-    // 1. Seed Admins & Super Admins into User collection
-    console.log('[Seed] Upserting Admin & Super Admin users...');
-    await User.findOneAndUpdate({ id: MOCK_ADMIN.id }, MOCK_ADMIN, { upsert: true, new: true });
-    await User.findOneAndUpdate({ id: MOCK_SUPER_ADMIN.id }, MOCK_SUPER_ADMIN, { upsert: true, new: true });
-
-    // 2. Seed 10 Employees into Employee collection and User collection (for login)
-    console.log('[Seed] Upserting 10 Employees...');
-    for (const emp of MOCK_EMPLOYEES) {
-      await Employee.findOneAndUpdate({ id: emp.id }, emp, { upsert: true, new: true });
-      await User.findOneAndUpdate(
-        { id: emp.id },
-        {
-          id: emp.id,
-          name: emp.name,
-          email: emp.email,
-          role: 'employee',
-          password: 'password123',
-          joinedDate: emp.joinedDate,
-          avatar: emp.avatar
-        },
-        { upsert: true, new: true }
-      );
+// Helper to parse CSV with quoted multiline support
+export function parseCSV(str) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    const next = str[i + 1];
+    
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(cell.trim());
+      cell = '';
+    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+      if (char === '\r' && next === '\n') i++;
+      row.push(cell.trim());
+      if (row.some(c => c.length > 0)) {
+        rows.push(row);
+      }
+      row = [];
+      cell = '';
+    } else {
+      cell += char;
     }
-
-    // 3. Seed Tasks
-    console.log('[Seed] Upserting Tasks...');
-    for (const task of MOCK_TASKS) {
-      await Task.findOneAndUpdate({ id: task.id }, task, { upsert: true, new: true });
-    }
-
-    // 4. Seed Attendance Records for today & yesterday across all 10 employees
-    console.log('[Seed] Upserting Attendance records...');
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-    const attendanceSeed = [
-      { id: 'att-1', employeeId: 'emp-1', date: today, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-2', employeeId: 'emp-2', date: today, status: 'Present', checkIn: '09:30', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-3', employeeId: 'emp-3', date: today, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Remote UI design' },
-      { id: 'att-4', employeeId: 'emp-4', date: today, status: 'Present', checkIn: '09:20', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-5', employeeId: 'emp-5', date: today, status: 'Half Day', checkIn: '09:30', checkOut: '14:00', notes: 'Doctor appointment' },
-      { id: 'att-6', employeeId: 'emp-6', date: today, status: 'Present', checkIn: '09:10', checkOut: '18:45', notes: 'Dev deployment' },
-      { id: 'att-7', employeeId: 'emp-7', date: today, status: 'Present', checkIn: '09:25', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-8', employeeId: 'emp-8', date: today, status: 'Present', checkIn: '09:40', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-9', employeeId: 'emp-9', date: today, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Video asset rendering' },
-      { id: 'att-10', employeeId: 'emp-10', date: today, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-11', employeeId: 'emp-1', date: yesterday, status: 'Present', checkIn: '09:10', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-12', employeeId: 'emp-2', date: yesterday, status: 'Present', checkIn: '09:25', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-13', employeeId: 'emp-3', date: yesterday, status: 'Present', checkIn: '09:30', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-14', employeeId: 'emp-4', date: yesterday, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Remote campaign setup' },
-      { id: 'att-15', employeeId: 'emp-5', date: yesterday, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-16', employeeId: 'emp-6', date: yesterday, status: 'Present', checkIn: '09:05', checkOut: '18:30', notes: 'Bug fixes' }
-    ];
-
-    for (const att of attendanceSeed) {
-      await Attendance.findOneAndUpdate({ id: att.id }, att, { upsert: true, new: true });
-    }
-
-    console.log('[Seed] Database seeding completed successfully!');
-    process.exit(0);
-  } catch (error) {
-    console.error('[Seed Error]:', error);
-    process.exit(1);
   }
+  if (cell || row.length > 0) {
+    row.push(cell.trim());
+    if (row.some(c => c.length > 0)) {
+      rows.push(row);
+    }
+  }
+  return rows;
 }
 
-seedDatabase();
+const MONTH_MAP = {
+  jan: '01', january: '01',
+  feb: '02', february: '02',
+  mar: '03', march: '03',
+  apr: '04', april: '04',
+  may: '05',
+  jun: '06', june: '06',
+  jul: '07', july: '07',
+  aug: '08', august: '08',
+  sep: '09', sept: '09', september: '09',
+  oct: '10', october: '10',
+  nov: '11', november: '11',
+  dec: '12', december: '12'
+};
+
+// Normalize Date format (M/D/YYYY, YYYY-MM-DD, or D-Month-YYYY)
+function normalizeDate(rawDate, defaultYear = '2026') {
+  if (!rawDate) return '';
+  const trimmed = rawDate.trim();
+  if (!trimmed) return '';
+
+  // Case 1: M/D/YYYY or D/M/YYYY
+  const slashParts = trimmed.split('/');
+  if (slashParts.length === 3) {
+    const month = slashParts[0].padStart(2, '0');
+    const day = slashParts[1].padStart(2, '0');
+    let year = slashParts[2];
+    if (year.length === 2) year = '20' + year;
+    return `${year}-${month}-${day}`;
+  }
+
+  // Case 2: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Case 3: 9-July-2026 or 06-October-2026 or 31-August-2026
+  const hyphenParts = trimmed.split('-');
+  if (hyphenParts.length === 3) {
+    const day = hyphenParts[0].replace(/\D/g, '').padStart(2, '0');
+    const mStr = hyphenParts[1].toLowerCase().replace(/\s/g, '');
+    const month = MONTH_MAP[mStr] || '08';
+    let year = hyphenParts[2].replace(/\D/g, '') || defaultYear;
+    if (year.length === 2) year = '20' + year;
+    return `${year}-${month}-${day}`;
+  }
+
+  // Case 4: July 23 or July 28
+  const spaceParts = trimmed.split(/\s+/);
+  if (spaceParts.length === 2) {
+    const mStr = spaceParts[0].toLowerCase();
+    const day = spaceParts[1].replace(/\D/g, '').padStart(2, '0');
+    const month = MONTH_MAP[mStr];
+    if (month && day) {
+      return `${defaultYear}-${month}-${day}`;
+    }
+  }
+
+  return trimmed;
+}
+
+// Map tech names to employee record
+export const resolveAssignee = (techName) => {
+  const lower = (techName || '').toLowerCase().trim();
+  if (lower.includes('kamini')) {
+    return {
+      assignedToId: 'emp-kamini',
+      assignedTo: 'Kamini',
+      assignedToEmail: 'kamini@systemcaresitsolutions.com',
+      assignedToUsername: 'Kamini'
+    };
+  }
+  if (lower.includes('tamil') || lower.includes('selvi')) {
+    return {
+      assignedToId: 'emp-tamil',
+      assignedTo: 'Tamil Selvi',
+      assignedToEmail: 'tamil@systemcaresitsolutions.com',
+      assignedToUsername: 'Tamil Selvi'
+    };
+  }
+  if (lower.includes('hari') || lower.includes('varman')) {
+    return {
+      assignedToId: 'emp-harivarman',
+      assignedTo: 'Harivarman',
+      assignedToEmail: 'harivarman@systemcaresitsolutions.com',
+      assignedToUsername: 'Harivarman'
+    };
+  }
+  if (lower.includes('mahima')) {
+    return {
+      assignedToId: 'emp-mahima',
+      assignedTo: 'Mahima',
+      assignedToEmail: 'mahima@systemcaresitsolutions.com',
+      assignedToUsername: 'Mahima'
+    };
+  }
+  if (lower.includes('martin') || lower.includes('david')) {
+    return {
+      assignedToId: 'emp-martindavid',
+      assignedTo: 'Martin David',
+      assignedToEmail: 'martindavid@systemcaresitsolutions.com',
+      assignedToUsername: 'Martin David'
+    };
+  }
+  // Default to Rebecca / Johncy Rebecca
+  return {
+    assignedToId: 'emp-rebecca',
+    assignedTo: 'Rebecca',
+    assignedToEmail: 'rebecca@systemcaresitsolutions.com',
+    assignedToUsername: 'Rebecca'
+  };
+};
+
+function normalizeFormat(activity, comments) {
+  const act = (activity || '').toLowerCase();
+  const comm = (comments || '').toLowerCase();
+
+  if (act.includes('reel') || comm.includes('reel') || comm.includes('video')) return 'Reel';
+  if (act.includes('carousel') || act.includes('carrousel') || comm.includes('carousel')) return 'Carousel';
+  if (act.includes('website') || comm.includes('website') || comm.includes('web')) return 'Website UI';
+  if (act.includes('static') || comm.includes('poster') || comm.includes('post')) return 'Static Poster';
+  if (act.includes('creatives') || comm.includes('banner') || comm.includes('pamphlet')) return 'Banner';
+  if (act.includes('meta ad')) return 'Static Poster';
+  if (act.includes('support') || comm.includes('invoice') || comm.includes('data')) return 'Document';
+  return 'Static Poster';
+}
+
+function normalizeStatus(rawStatus) {
+  const s = (rawStatus || '').toLowerCase().trim();
+  if (s === 'completed' || s === 'posted') return 'Completed';
+  if (s === 'in progress') return 'In Progress';
+  if (s === 'on hold') return 'On Hold';
+  if (s === 'waiting for approval') return 'Waiting for approval';
+  if (s === 'cancelled' || s === 'rejected') return 'Backlog';
+  if (s === 'yet to start') return 'Yet to start';
+  return s ? (s.charAt(0).toUpperCase() + s.slice(1)) : 'Yet to start';
+}
+
+export const generateTasks = () => {
+  const csvPath = path.join(__dirname, 'tasks_dataset.csv');
+  if (!fs.existsSync(csvPath)) {
+    console.warn('[Seed] tasks_dataset.csv not found at:', csvPath);
+    return [];
+  }
+  const text = fs.readFileSync(csvPath, 'utf8');
+  const parsed = parseCSV(text);
+
+  const tasks = [];
+  let isSocialSection = false;
+  let socialPostIndex = 1;
+
+  for (let i = 0; i < parsed.length; i++) {
+    const row = parsed[i];
+    if (!row || row.length === 0) continue;
+
+    // Detect transition to Social Media Calendar Sheet
+    const firstCell = (row[0] || '').trim().toLowerCase();
+    if (firstCell.includes('to be posted on')) {
+      isSocialSection = true;
+      continue;
+    }
+
+    if (!isSocialSection) {
+      // -------------------------------------------------------------
+      // SHEET 1: TECH TEAM DAILY WORKFLOW TASKS
+      // -------------------------------------------------------------
+      const sNoStr = row[0];
+      if (!sNoStr || isNaN(parseInt(sNoStr, 10))) continue;
+
+      const sNo = parseInt(sNoStr, 10);
+      const rawDate = row[1];
+      const clientProject = row[2] || 'SCS';
+      const activity = row[3] || 'Static';
+      const project = row[4] || `P${sNo}`;
+      const coreActivity = row[5] || 'Social Media Content';
+      const tech = row[6] || '';
+      const rawWorkStart = row[7];
+      const rawTargetEnd = row[8];
+      const rawActualEnd = row[9];
+      const rawSla = row[10];
+      const rawStatus = row[11];
+      const comments = row[12] || '';
+
+      const date = normalizeDate(rawDate) || '2026-08-01';
+      const workStartDate = normalizeDate(rawWorkStart) || date;
+      const targetEndDate = normalizeDate(rawTargetEnd) || date;
+      const actualEndDate = normalizeDate(rawActualEnd) || '';
+      const status = normalizeStatus(rawStatus);
+      const assignee = resolveAssignee(tech);
+      const format = normalizeFormat(activity, comments);
+
+      let slaStatus = 'Green';
+      if (actualEndDate && targetEndDate) {
+        slaStatus = actualEndDate <= targetEndDate ? 'Green' : 'Red';
+      } else if (targetEndDate && targetEndDate < '2026-09-15' && status !== 'Completed') {
+        slaStatus = 'Red';
+      }
+
+      const taskId = `TASK-${String(sNo).padStart(3, '0')}`;
+      const description = comments || `${activity} for ${clientProject} - Project ${project}`;
+
+      let estimatedHours = 3;
+      if (format === 'Carousel') estimatedHours = 5;
+      else if (format === 'Reel') estimatedHours = 4;
+      else if (format === 'Website UI') estimatedHours = 8;
+      else if (activity.toLowerCase().includes('adhoc')) estimatedHours = 2;
+      else if (activity.toLowerCase().includes('social media mgmt')) estimatedHours = 2;
+
+      tasks.push({
+        id: taskId,
+        sNo: sNo,
+        isSocialMediaPost: false,
+        taskType: 'task',
+        sourceSheet: 'workflow_tasks',
+        date: date,
+        toBePostedOn: '',
+        toBeCompletedOn: targetEndDate || date,
+        theme: coreActivity || 'General Operations',
+        format: format,
+        description: description,
+        title: description,
+        client: clientProject,
+        comments: comments,
+        reference: project,
+        clientProject: clientProject,
+        activity: activity,
+        project: project,
+        coreActivity: coreActivity,
+        assignedToId: assignee.assignedToId,
+        assignedTo: assignee.assignedTo,
+        assignedToEmail: assignee.assignedToEmail,
+        assignedToUsername: assignee.assignedToUsername,
+        platform: clientProject.includes('Store') ? 'Instagram / Meta' : 'Instagram / LinkedIn',
+        scheduledTime: '10:00',
+        mediaUrl: '',
+        workStartDate: workStartDate,
+        targetEndDate: targetEndDate,
+        actualEndDate: actualEndDate,
+        slaStatus: slaStatus,
+        status: status,
+        commentsUpdates: comments,
+        estimatedHours: estimatedHours,
+        timeSpentHours: status === 'Completed' ? estimatedHours : 0
+      });
+    } else {
+      // -------------------------------------------------------------
+      // SHEET 2: SOCIAL MEDIA PUBLISHING CALENDAR (Scheduled Posts)
+      // Columns: To be posted on, Theme, Format, Description, Reference, Assigned to, Status, Completed on, Comments
+      // -------------------------------------------------------------
+      const rawToBePostedOn = row[0];
+      if (!rawToBePostedOn || !rawToBePostedOn.trim()) continue;
+
+      const toBePostedOn = normalizeDate(rawToBePostedOn);
+      if (!toBePostedOn) continue;
+
+      const theme = row[1] || 'Digital Marketing';
+      const rawFormat = row[2] || 'Static Poster';
+      const description = row[3] || `${theme} ${rawFormat}`;
+      const reference = row[4] || '';
+      const tech = row[5] || 'Johncy';
+      const rawStatus = row[6] || 'In Progress';
+      const rawCompletedOn = row[7] || '';
+      const comments = row[8] || '';
+
+      const status = normalizeStatus(rawStatus);
+      const completedOn = normalizeDate(rawCompletedOn);
+      const assignee = resolveAssignee(tech);
+      const format = normalizeFormat(rawFormat, description);
+
+      const postId = `POST-${String(socialPostIndex).padStart(3, '0')}`;
+      socialPostIndex++;
+
+      let estimatedHours = 4;
+      if (format === 'Carousel') estimatedHours = 5;
+      else if (format === 'Reel') estimatedHours = 4;
+      else if (format === 'Static Poster') estimatedHours = 3;
+
+      tasks.push({
+        id: postId,
+        sNo: 200 + socialPostIndex,
+        isSocialMediaPost: true,
+        taskType: 'social_post',
+        sourceSheet: 'social_media_schedule',
+        date: toBePostedOn,
+        toBePostedOn: toBePostedOn,
+        toBeCompletedOn: toBePostedOn,
+        workStartDate: completedOn || toBePostedOn,
+        targetEndDate: toBePostedOn,
+        actualEndDate: (status === 'Completed') ? (completedOn || toBePostedOn) : null,
+        theme: theme,
+        format: format,
+        description: description,
+        title: description ? description.split('\n')[0].slice(0, 60) : `${theme} ${format}`,
+        client: theme === 'CRM' ? 'SLMS / CRM' : (theme.toLowerCase().includes('laundry') ? 'Salavai Laundry' : 'SCS Digital'),
+        comments: comments || description,
+        reference: reference,
+        clientProject: theme === 'CRM' ? 'SLMS / CRM' : 'System Care Digital',
+        activity: format,
+        project: `SM-${toBePostedOn.replace(/-/g, '')}`,
+        coreActivity: 'Social Media Content',
+        assignedToId: assignee.assignedToId,
+        assignedTo: assignee.assignedTo,
+        assignedToEmail: assignee.assignedToEmail,
+        assignedToUsername: assignee.assignedToUsername,
+        platform: 'Instagram / Meta',
+        scheduledTime: '10:00',
+        mediaUrl: '',
+        slaStatus: 'Green',
+        status: status,
+        commentsUpdates: comments,
+        estimatedHours: estimatedHours,
+        timeSpentHours: status === 'Completed' ? estimatedHours : 0
+      });
+    }
+  }
+
+  return tasks;
+};
+
+export const seedDatabase = async () => {
+  try {
+    console.log('[Seed] Connecting to MongoDB...');
+    await mongoose.connect(MONGO_URI);
+    console.log('[Seed] Connected to MongoDB.');
+
+    // 1. Clear out all old collections completely
+    console.log('[Seed] Clearing all existing mock and old collections...');
+    await Employee.deleteMany({});
+    await User.deleteMany({});
+    await Task.deleteMany({});
+    await TimeLog.deleteMany({});
+    await Attendance.deleteMany({});
+    await LeaveRequest.deleteMany({});
+    console.log('[Seed] All collections cleared.');
+
+    // 2. Insert Employees and Auth Users
+    console.log('[Seed] Inserting CSV Team Employees & Users...');
+    await Employee.insertMany(SEED_EMPLOYEES);
+
+    const userDocs = [
+      ...SEED_EMPLOYEES.map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        email: emp.email,
+        role: 'employee',
+        password: emp.password,
+        mustChangePassword: emp.mustChangePassword ?? true,
+        isPasswordChanged: emp.isPasswordChanged ?? false,
+        avatar: emp.avatar,
+        joinedDate: emp.joinedDate
+      })),
+      ...SEED_ADMINS.map(adm => ({
+        id: adm.id,
+        name: adm.name,
+        email: adm.email,
+        role: adm.role,
+        password: adm.password,
+        mustChangePassword: adm.mustChangePassword ?? false,
+        isPasswordChanged: adm.isPasswordChanged ?? false,
+        avatar: adm.avatar,
+        joinedDate: adm.joinedDate
+      }))
+    ];
+    await User.insertMany(userDocs);
+    console.log(`[Seed] Successfully inserted ${SEED_EMPLOYEES.length} Employees and ${userDocs.length} Users.`);
+
+    // 3. Insert Tasks generated from CSV
+    const tasksToInsert = generateTasks();
+    await Task.insertMany(tasksToInsert);
+    console.log(`[Seed] Successfully inserted ${tasksToInsert.length} CSV tasks.`);
+
+    // 4. Create initial time logs for completed tasks
+    const completedTasks = tasksToInsert.filter(t => t.status === 'Completed' && t.actualEndDate);
+    const initialTimeLogs = completedTasks.map((t, idx) => ({
+      id: `log-${Date.now()}-${idx}`,
+      taskId: t.id,
+      taskName: `${t.format}: ${t.description.slice(0, 30)}...`,
+      employeeId: t.assignedToId,
+      employeeName: t.assignedTo,
+      date: t.actualEndDate || t.date,
+      hours: t.estimatedHours,
+      activity: t.activity,
+      notes: `Completed task ${t.id}`
+    }));
+    if (initialTimeLogs.length > 0) {
+      await TimeLog.insertMany(initialTimeLogs);
+      console.log(`[Seed] Created ${initialTimeLogs.length} initial productivity time logs.`);
+    }
+
+    console.log('[Seed] Database successfully seeded with CSV data!');
+    return {
+      employees: SEED_EMPLOYEES.length,
+      users: userDocs.length,
+      tasks: tasksToInsert.length,
+      timeLogs: initialTimeLogs.length
+    };
+  } catch (error) {
+    console.error('[Seed Error]:', error);
+    throw error;
+  }
+};
+
+// Execute if run directly
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  seedDatabase()
+    .then((res) => {
+      console.log('[Seed Done]:', res);
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('[Seed Fatal]:', err);
+      process.exit(1);
+    });
+}

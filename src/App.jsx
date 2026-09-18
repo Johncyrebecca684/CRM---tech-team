@@ -18,7 +18,7 @@ import { PerformanceReportView } from './views/PerformanceReportView';
 const MainContent = () => {
   const { currentUser, currentTab, userRole, hasPermission, isSidebarCollapsed } = useCrm();
 
-  if (!currentUser) {
+  if (!currentUser || (currentUser.role === 'employee' && currentUser.mustChangePassword === true)) {
     return <AuthView />;
   }
 
@@ -33,7 +33,9 @@ const MainContent = () => {
       case 'profile-page':
         return <ProfileView />;
       case 'social-media-calendar':
-        return hasPermission('admin') ? <SocialMediaCalendarView /> : <EmployeeView />;
+        return <SocialMediaCalendarView initialMode="social" />;
+      case 'task-calendar':
+        return <SocialMediaCalendarView initialMode="tasks" />;
       case 'list-tasks':
         return <TaskTableView />;
       case 'monthly-reports':

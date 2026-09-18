@@ -7,6 +7,8 @@ const employeeSchema = new mongoose.Schema(
     role: { type: String, default: 'Software Engineer' },
     email: { type: String, required: true },
     password: { type: String, default: '123456' },
+    mustChangePassword: { type: Boolean, default: false },
+    isPasswordChanged: { type: Boolean, default: false },
     avatar: { type: String },
     skills: [{ type: String }],
     weeklyCapacityHours: { type: Number, default: 40 },

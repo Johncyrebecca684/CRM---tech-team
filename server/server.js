@@ -38,9 +38,7 @@ app.get('/health', (req, res) => {
 });
 
 // Start Server & Connect MongoDB
-const start = async () => {
-  await connectDB();
-  
+const start = () => {
   const server = app.listen(PORT, () => {
     console.log(`[Tech CRM Server] Running on http://localhost:${PORT}`);
   });
@@ -52,6 +50,10 @@ const start = async () => {
       console.error('[Tech CRM Server Error]', err);
     }
   });
+
+  // Connect MongoDB in background
+  connectDB();
 };
 
 start();
+

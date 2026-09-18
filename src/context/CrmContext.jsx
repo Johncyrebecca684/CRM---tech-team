@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
-  INITIAL_EMPLOYEES,
-  DEFAULT_ADMIN,
-  INITIAL_TASKS,
-  INITIAL_TIME_LOGS,
   CLIENT_PROJECT_OPTIONS,
   ACTIVITY_OPTIONS,
   CORE_ACTIVITY_OPTIONS,
@@ -11,140 +7,100 @@ import {
   FORMAT_OPTIONS,
   STATUS_OPTIONS,
   SLA_STATUS_OPTIONS,
-  INITIAL_LEAVE_REQUESTS,
-  LEAVE_TYPE_OPTIONS
+  LEAVE_TYPE_OPTIONS,
+  INITIAL_EMPLOYEES,
+  DEFAULT_ADMIN
 } from '../data/initialData';
 
 const CrmContext = createContext();
 
 export const CrmProvider = ({ children }) => {
-  // Local storage lists - initialize with 10 mock employees and 1 admin
+  // Application State initialized from DB cache or standard dataset
   const [employees, setEmployees] = useState(() => {
-    const dedupe = (list) => {
-      const seen = new Set();
-      return list.filter(e => {
-        if (!e || !e.id) return false;
-        if (e.email === 'admin@techteam.dev' || e.email === 'cto@techteam.dev') return false;
-        const key = e.email ? e.email.toLowerCase().trim() : e.id;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    };
-
-    const saved = localStorage.getItem('tech_crm_employees_v5');
+    const saved = localStorage.getItem('tech_crm_employees_v8') || localStorage.getItem('tech_crm_employees_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 10) {
-          const unique = dedupe(parsed);
-          if (unique.length === 10) return unique;
-        }
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {}
     }
     return INITIAL_EMPLOYEES;
   });
 
   const [admins, setAdmins] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_admins_v5');
+    const saved = localStorage.getItem('tech_crm_admins_v8') || localStorage.getItem('tech_crm_admins_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {}
     }
-    return [
-      DEFAULT_ADMIN
-    ];
+    return DEFAULT_ADMIN ? [DEFAULT_ADMIN] : [];
   });
 
   const [superAdmins, setSuperAdmins] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_super_admins_v5');
+    const saved = localStorage.getItem('tech_crm_super_admins_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {}
     }
-    return [
-      { id: 'super-1', name: 'Chief Technology Officer', email: 'cto@techteam.dev', role: 'super_admin', joinedDate: '2023-11-01' }
-    ];
+    return [];
   });
 
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_tasks_v5');
+    const saved = localStorage.getItem('tech_crm_tasks_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(t => {
-            let task = t.activity === 'Support & Others' ? { ...t, activity: 'Creatives', coreActivity: 'Social Media Content' } : t;
-            if (task.assignedToId === 'emp-5' || task.assignedToUsername?.toLowerCase().includes('johncy')) {
-              if (!task.assignedToEmail || task.assignedToEmail.toLowerCase().includes('techteam.dev')) {
-                task = { ...task, assignedToEmail: 'johncyrebecca@gmail.com' };
-              }
-            }
-            return task;
-          });
-        }
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {}
     }
-    return INITIAL_TASKS.map(t => t.activity === 'Support & Others' ? { ...t, activity: 'Creatives', coreActivity: 'Social Media Content' } : t);
+    return [];
   });
 
   const [timeLogs, setTimeLogs] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_timelogs_v5');
-    return saved ? JSON.parse(saved) : INITIAL_TIME_LOGS;
+    const saved = localStorage.getItem('tech_crm_timelogs_v7');
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Attendance Records State
   const [attendanceRecords, setAttendanceRecords] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_attendance_v1');
+    const saved = localStorage.getItem('tech_crm_attendance_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {}
     }
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    return [
-      { id: 'att-1', employeeId: 'emp-1', date: today, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-2', employeeId: 'emp-2', date: today, status: 'Present', checkIn: '09:30', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-3', employeeId: 'emp-3', date: today, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Remote UI design' },
-      { id: 'att-4', employeeId: 'emp-4', date: today, status: 'Present', checkIn: '09:20', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-5', employeeId: 'emp-5', date: today, status: 'Half Day', checkIn: '09:30', checkOut: '14:00', notes: 'Doctor appointment' },
-      { id: 'att-6', employeeId: 'emp-6', date: today, status: 'Present', checkIn: '09:10', checkOut: '18:45', notes: 'Dev deployment' },
-      { id: 'att-7', employeeId: 'emp-7', date: today, status: 'Present', checkIn: '09:25', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-8', employeeId: 'emp-8', date: today, status: 'Present', checkIn: '09:40', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-9', employeeId: 'emp-9', date: today, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Video asset rendering' },
-      { id: 'att-10', employeeId: 'emp-10', date: today, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-11', employeeId: 'emp-1', date: yesterday, status: 'Present', checkIn: '09:10', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-12', employeeId: 'emp-2', date: yesterday, status: 'Present', checkIn: '09:25', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-13', employeeId: 'emp-3', date: yesterday, status: 'Present', checkIn: '09:30', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-14', employeeId: 'emp-4', date: yesterday, status: 'Work From Home', checkIn: '09:00', checkOut: '18:00', notes: 'Remote campaign setup' },
-      { id: 'att-15', employeeId: 'emp-5', date: yesterday, status: 'Present', checkIn: '09:15', checkOut: '18:30', notes: 'In office' },
-      { id: 'att-16', employeeId: 'emp-6', date: yesterday, status: 'Present', checkIn: '09:05', checkOut: '18:30', notes: 'Bug fixes' }
-    ];
+    return [];
   });
 
   // Leave Requests State
   const [leaveRequests, setLeaveRequests] = useState(() => {
-    const saved = localStorage.getItem('tech_crm_leave_requests_v1');
+    const saved = localStorage.getItem('tech_crm_leave_requests_v7');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {}
     }
-    return INITIAL_LEAVE_REQUESTS;
+    return [];
   });
 
   // Current Logged In User Session
   const [currentUser, setCurrentUser] = useState(() => {
-    const savedUser = localStorage.getItem('tech_crm_user_v5');
-    return savedUser ? JSON.parse(savedUser) : null;
+    const savedUser = localStorage.getItem('tech_crm_user_v7');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed) return parsed;
+      } catch (e) {}
+    }
+    return null;
   });
+
 
   const userRole = currentUser ? currentUser.role : 'guest';
 
@@ -263,15 +219,15 @@ export const CrmProvider = ({ children }) => {
 
   // Persistence Effects
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_employees_v5', employees);
+    safeSetLocalStorage('tech_crm_employees_v8', employees);
   }, [employees]);
 
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_admins_v5', admins);
+    safeSetLocalStorage('tech_crm_admins_v8', admins);
   }, [admins]);
 
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_super_admins_v5', superAdmins);
+    safeSetLocalStorage('tech_crm_super_admins_v7', superAdmins);
   }, [superAdmins]);
 
   useEffect(() => {
@@ -286,27 +242,27 @@ export const CrmProvider = ({ children }) => {
       }
       return t;
     });
-    safeSetLocalStorage('tech_crm_tasks_v5', lightweightTasks);
+    safeSetLocalStorage('tech_crm_tasks_v7', lightweightTasks);
   }, [tasks]);
 
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_timelogs_v5', timeLogs);
+    safeSetLocalStorage('tech_crm_timelogs_v7', timeLogs);
   }, [timeLogs]);
 
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_attendance_v1', attendanceRecords);
+    safeSetLocalStorage('tech_crm_attendance_v7', attendanceRecords);
   }, [attendanceRecords]);
 
   useEffect(() => {
-    safeSetLocalStorage('tech_crm_leave_requests_v1', leaveRequests);
+    safeSetLocalStorage('tech_crm_leave_requests_v7', leaveRequests);
   }, [leaveRequests]);
 
   useEffect(() => {
     if (currentUser) {
-      safeSetLocalStorage('tech_crm_user_v5', currentUser);
+      safeSetLocalStorage('tech_crm_user_v7', currentUser);
     } else {
       try {
-        localStorage.removeItem('tech_crm_user_v5');
+        localStorage.removeItem('tech_crm_user_v7');
       } catch (err) {}
     }
   }, [currentUser]);
@@ -349,66 +305,80 @@ export const CrmProvider = ({ children }) => {
           elapsedSeconds: prev.elapsedSeconds + 1
         }));
       }, 1000);
-    } else {
+    } else if (!activeTimer) {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
   }, [activeTimer]);
 
+  const cancelTimer = () => {
+    setActiveTimer(null);
+  };
+
+  const loginAsAdmin = (adminUser) => {
+    const adminObj = {
+      ...adminUser,
+      role: 'admin',
+      isProfileCompleted: true
+    };
+    setCurrentUser(adminObj);
+  };
+
+
+  const loginAsEmployee = (empUser) => {
+    const empObj = {
+      ...empUser,
+      role: 'employee',
+      isProfileCompleted: empUser.isProfileCompleted ?? true
+    };
+    setCurrentUser(empObj);
+  };
+
+  const updateCurrentUser = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    if (updatedUser.role === 'employee') {
+      updateEmployee(updatedUser.id, updatedUser);
+    }
+  };
+
+  const changePassword = async ({ currentPassword, newPassword }) => {
+    if (!currentUser) return { success: false, error: 'Not logged in' };
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          email: currentUser.email,
+          currentPassword,
+          newPassword
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update password');
+      }
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+
   // RBAC Permission Helper
   const hasPermission = (requiredRole) => {
     if (!currentUser) return false;
-    if (currentUser.role === 'admin') return true;
+    if (currentUser.role === 'admin' || currentUser.role === 'super_admin') return true;
     if (currentUser.role === 'employee') return requiredRole === 'employee';
     return false;
-  };
-
-  // AUTH LOGIN HANDLERS
-  const loginAsAdmin = async (adminId) => {
-    const adminObj = admins.find((a) => a.id === adminId) || admins[0];
-    const user = {
-      id: adminObj ? adminObj.id : 'admin-1',
-      name: adminObj ? adminObj.name : 'Team Admin',
-      email: adminObj ? adminObj.email : 'admin@techteam.dev',
-      role: 'admin',
-      avatar: adminObj?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-    };
-    setCurrentUser(user);
-    setCurrentTab('admin-dashboard');
-
-    // Save Admin Login to MongoDB database
-    try {
-      await fetch('/api/admins', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
-      console.log('[MongoDB] Admin login saved to database:', user.email);
-    } catch (e) {
-      console.warn('[MongoDB Notice] Admin login save notice:', e.message);
-    }
-  };
-
-  const loginAsEmployee = (empId) => {
-    const emp = employees.find((e) => e.id === empId);
-    if (emp) {
-      const user = {
-        id: emp.id,
-        name: emp.name,
-        email: emp.email,
-        role: 'employee',
-        avatar: emp.avatar
-      };
-      setCurrentUser(user);
-      setSelectedEmployeeViewId(emp.id);
-      setCurrentTab('employee-page');
-    }
   };
 
   const logout = () => {
     if (activeTimer) stopTimer();
     setCurrentUser(null);
   };
+
+
 
   // Bootstrap data from backend MongoDB on initial load
   useEffect(() => {
@@ -418,28 +388,24 @@ export const CrmProvider = ({ children }) => {
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.employees) && data.employees.length > 0) {
-            const seen = new Set();
-            const realEmps = data.employees.filter(e => {
-              if (!e || !e.id) return false;
-              if (e.email === 'admin@techteam.dev' || e.email === 'cto@techteam.dev') return false;
-              const key = e.email ? e.email.toLowerCase().trim() : e.id;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            });
-            setEmployees(realEmps.length > 0 ? realEmps : INITIAL_EMPLOYEES);
+            setEmployees(data.employees);
           } else {
-            setEmployees(INITIAL_EMPLOYEES);
+            setEmployees((prev) => (prev && prev.length > 0 ? prev : INITIAL_EMPLOYEES));
           }
-          if (Array.isArray(data.admins) && data.admins.length > 0) setAdmins(data.admins);
-          if (Array.isArray(data.superAdmins) && data.superAdmins.length > 0) setSuperAdmins(data.superAdmins);
-          if (Array.isArray(data.tasks) && data.tasks.length > 0) setTasks(data.tasks);
-          if (Array.isArray(data.timeLogs) && data.timeLogs.length > 0) setTimeLogs(data.timeLogs);
-          if (Array.isArray(data.attendanceRecords) && data.attendanceRecords.length > 0) setAttendanceRecords(data.attendanceRecords);
-          if (Array.isArray(data.leaveRequests) && data.leaveRequests.length > 0) setLeaveRequests(data.leaveRequests);
+          if (Array.isArray(data.admins) && data.admins.length > 0) {
+            setAdmins(data.admins);
+          } else if (DEFAULT_ADMIN) {
+            setAdmins((prev) => (prev && prev.length > 0 ? prev : [DEFAULT_ADMIN]));
+          }
+          if (Array.isArray(data.superAdmins)) setSuperAdmins(data.superAdmins);
+          if (Array.isArray(data.tasks)) setTasks(data.tasks);
+          if (Array.isArray(data.timeLogs)) setTimeLogs(data.timeLogs);
+          if (Array.isArray(data.attendanceRecords)) setAttendanceRecords(data.attendanceRecords);
+          if (Array.isArray(data.leaveRequests)) setLeaveRequests(data.leaveRequests);
         }
       } catch (err) {
-        console.warn('Backend server not reached, using local storage cache:', err.message);
+        console.warn('Backend server not reached:', err.message);
+        setEmployees((prev) => (prev && prev.length > 0 ? prev : INITIAL_EMPLOYEES));
       }
     };
     fetchBootstrapData();
@@ -447,9 +413,6 @@ export const CrmProvider = ({ children }) => {
 
   const restoreDefaultEmployees = () => {
     setEmployees(INITIAL_EMPLOYEES);
-    setTasks(INITIAL_TASKS);
-    localStorage.setItem('tech_crm_employees_v5', JSON.stringify(INITIAL_EMPLOYEES));
-    localStorage.setItem('tech_crm_tasks_v5', JSON.stringify(INITIAL_TASKS));
   };
 
   // PROMOTION HANDLERS
@@ -683,7 +646,7 @@ export const CrmProvider = ({ children }) => {
       name: employeeData.name,
       role: employeeData.role || 'Software Engineer',
       email: employeeData.email,
-      avatar: employeeData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(employeeData.name)}`,
+      avatar: employeeData.avatar || '',
       skills: employeeData.skills || ['Engineering'],
       weeklyCapacityHours: parseInt(employeeData.weeklyCapacityHours) || 40,
       status: 'Active',
@@ -946,8 +909,8 @@ export const CrmProvider = ({ children }) => {
   const applyLeaveRequest = async (data) => {
     const newReq = {
       id: `leave-${Date.now()}`,
-      employeeId: data.employeeId || currentUser?.id || 'emp-1',
-      employeeName: data.employeeName || currentUser?.name || 'Specialist',
+      employeeId: data.employeeId || currentUser?.id || '',
+      employeeName: data.employeeName || currentUser?.name || 'Employee',
       employeeEmail: data.employeeEmail || currentUser?.email || '',
       employeeRole: data.employeeRole || 'Specialist',
       leaveType: data.leaveType || 'Casual Leave',
@@ -1037,12 +1000,12 @@ export const CrmProvider = ({ children }) => {
     setTimeLogs([]);
     setAdmins([]);
     setLeaveRequests([]);
-    localStorage.removeItem('tech_crm_employees_v5');
-    localStorage.removeItem('tech_crm_tasks_v5');
-    localStorage.removeItem('tech_crm_timelogs_v5');
-    localStorage.removeItem('tech_crm_admins_v5');
-    localStorage.removeItem('tech_crm_attendance_v1');
-    localStorage.removeItem('tech_crm_leave_requests_v1');
+    localStorage.removeItem('tech_crm_employees_v7');
+    localStorage.removeItem('tech_crm_tasks_v7');
+    localStorage.removeItem('tech_crm_timelogs_v7');
+    localStorage.removeItem('tech_crm_admins_v7');
+    localStorage.removeItem('tech_crm_attendance_v7');
+    localStorage.removeItem('tech_crm_leave_requests_v7');
     fetch('/api/clear-all', { method: 'DELETE' }).catch((e) => console.warn('API Sync Notice:', e.message));
   };
 
@@ -1129,6 +1092,7 @@ export const CrmProvider = ({ children }) => {
         addEmployee,
         updateEmployee,
         updateProfile,
+        changePassword,
         deleteEmployee,
         clearAllData
       }}
@@ -1136,6 +1100,7 @@ export const CrmProvider = ({ children }) => {
       {children}
     </CrmContext.Provider>
   );
+
 };
 
 export const useCrm = () => useContext(CrmContext);
